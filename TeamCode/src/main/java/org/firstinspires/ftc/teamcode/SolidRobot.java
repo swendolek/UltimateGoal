@@ -57,6 +57,7 @@ public class SolidRobot {
     boolean detect = false;
 
     public final double motorRatio = 0.71474359;
+    private final double MINIMUM_DRIVE_POWER = 0.1;
 
     enum color{
         red, blue
@@ -381,6 +382,43 @@ public class SolidRobot {
         backRightWheel = power;
     }
 
+
+    private void smartDrive(double maxPower, int ticks, DcMotor encoder, int angle, int angleTolerance){
+        double d = MINIMUM_DRIVE_POWER;
+        double a = maxPower - d;
+        double b = (Math.PI) / ticks;
+
+        final double angleCorrectionValue = 1.7;
+
+        int startTicks = encoder.getCurrentPosition();
+        while(BRW.getCurrentPosition() < startTicks + ticks){
+            double currentPower = a * Math.sin(b * ticks) + d; //Derivative is a(cos(bx) * (db/dt)) + sin(bx) * (db/dx)
+
+            if(gyroPosition() < angle - angleTolerance){
+                //power left side more
+                frontLeftWheel = currentPower * angleCorrectionValue;
+                backLeftWheel = currentPower * angleCorrectionValue;
+                backRightWheel = currentPower;
+                frontRightWheel = currentPower;
+            }
+            else if(gyroPosition() > angle + angleTolerance){
+                //power right side more
+                frontLeftWheel = currentPower;
+                backLeftWheel = currentPower;
+                backRightWheel = currentPower * angleCorrectionValue;
+                frontRightWheel = currentPower * angleCorrectionValue;
+            }
+            else{
+                //Power both sides the same
+                frontLeftWheel = currentPower;
+                backLeftWheel = currentPower;
+                backRightWheel = currentPower;
+                frontRightWheel = currentPower;
+            }
+
+        }
+    }
+
     private void drive(double power, int ticks, DcMotor encoder){
         int startTicks = getPos(encoder);
 
@@ -477,45 +515,6 @@ public class SolidRobot {
 
         }
         powerWheels(0.0);
-    }
-
-    private void turnTo(double power, int degrees){
-
-    }
-
-    public void operationMiddleMouseButton(){
-
-        //Go and pick up a block iykwim
-
-        //drive(0.4, 1800);
-        //turnTo(0.5, 180);
-        //drive until we sense a block
-        //drive(0.5, -500);
-
-    }
-
-    public void operationConcrete(){
-
-        //Move foundation to building zone
-
-    }
-
-    public void operationStrawHat(){
-
-        //Place 德 skystone
-
-    }
-
-    public void operationCoral(){
-
-        //Do it again
-
-    }
-
-    public void operationWater(){
-
-        //park
-
     }
 
     public void redProAuto(){
