@@ -23,22 +23,10 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp", group = "TeleOp")
 public class TeleOp extends OpMode{
 
-    int driveDivider = 1;
-    int strafeDivider = 2;
-    int liftDivider = 1;
-    boolean clawPressed = false;
-    boolean clawOpen = false;
+    private boolean clawPressed = false;
+    private boolean clawOpen = false;
 
     SolidRobot robot;
-
-    Thread placeBlock = new Thread(){
-        public void run(){
-            robot.leftClaw = 0.4;
-            robot.rightClaw = 0.4;
-            robot.doDaSleep(500);
-
-        }
-    };
 
     /**
      * init - runs once after the init button is pressed
@@ -53,12 +41,10 @@ public class TeleOp extends OpMode{
 
     public void init_loop(){
         robot.doDaSleep(50);
-        //telemetry.addData("Gyro", robot.gyro.getCalibrationStatus());
 
     }
 
     public void start(){
-        //robot.start();
     }
 
     /**
@@ -83,6 +69,7 @@ public class TeleOp extends OpMode{
             robot.leftFoundationClaw = 0.0;
         }
 
+        int liftDivider;
         if(gamepad2.left_bumper) liftDivider = 2;
         else liftDivider = 1;
         robot.leftLift = gamepad2.left_stick_y * 0.7 / liftDivider;
@@ -116,6 +103,7 @@ public class TeleOp extends OpMode{
             robot.rightClaw = 0.6;
         }
 
+        int driveDivider, strafeDivider = 2;
         if(gamepad1.right_bumper) driveDivider = 1;
         else if(gamepad1.left_bumper){
             driveDivider = 4;
@@ -126,10 +114,7 @@ public class TeleOp extends OpMode{
             strafeDivider = 8;
         }
         else if(gamepad1.right_trigger > 0.5) driveDivider = 16;
-        else{
-            driveDivider = 2;
-            strafeDivider = 2;
-        }
+        else driveDivider = 2;
 
         if(gamepad1.dpad_left){
             robot.backLeftWheel = 1.0 / strafeDivider;

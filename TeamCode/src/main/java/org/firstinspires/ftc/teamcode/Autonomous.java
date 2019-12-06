@@ -23,19 +23,18 @@ public class Autonomous extends OpMode{
             telemetry.addData("Status", "Thread Started");
             if(robot.autoColor == SolidRobot.color.red){
                 if(robot.autoProgram == SolidRobot.program.pro){
-                    robot.redProAuto();
+                    //red main
                 }
                 else{
-                    robot.autoForSomeRandomTeam();
+                    //red alt
                 }
             }
             else{
                 if(robot.autoProgram == SolidRobot.program.pro){
-                    robot.blueProAuto();
+                    //blue main
                 }
                 else{
-                    //robot.blueSafeAuto();
-                    robot.autoForSomeRandomTeam();
+                    //blue alt
                 }
             }
 
@@ -52,6 +51,9 @@ public class Autonomous extends OpMode{
         robot.BLW.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         robot.BRW.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         robot.FRW.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        robot.setMinimumDrivePower(0.1);
+
     }
 
     /**
