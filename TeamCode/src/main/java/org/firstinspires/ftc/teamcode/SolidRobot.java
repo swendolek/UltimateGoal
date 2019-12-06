@@ -386,7 +386,7 @@ public class SolidRobot {
     private void smartDrive(double maxPower, int ticks, DcMotor encoder, int angle, int angleTolerance){
         double d = MINIMUM_DRIVE_POWER;
         double a = maxPower - d;
-        double b = (Math.PI) / ticks;
+        double b = 2 * ((2 * Math.PI) / ticks);
 
         final double angleCorrectionValue = 1.7;
 
