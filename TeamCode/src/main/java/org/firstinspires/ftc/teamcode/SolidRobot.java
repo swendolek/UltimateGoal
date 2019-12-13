@@ -212,7 +212,7 @@ public class SolidRobot {
     }
 
     public int gyroPosition(){
-        return 15 + (int) gyro.getAngularOrientation().firstAngle * -1;
+        return (int) gyro.getAngularOrientation().firstAngle * -1;
     }
 
     /**
