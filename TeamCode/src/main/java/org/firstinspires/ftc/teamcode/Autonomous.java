@@ -21,7 +21,7 @@ public class Autonomous extends OpMode{
     Thread auto = new Thread(){
         public void run(){
             telemetry.addData("Status", "Thread Started");
-            if(robot.autoColor == SolidRobot.color.red){
+            /*if(robot.autoColor == SolidRobot.color.red){
                 if(robot.autoProgram == SolidRobot.program.pro){
                     //red main
                 }
@@ -36,8 +36,10 @@ public class Autonomous extends OpMode{
                 else{
                     //blue alt
                 }
-            }
+            }*/
 
+            //robot.doDrive();
+            robot.drive(0.3, 1000, robot.BRW, 0, 3);
         }
     };
 

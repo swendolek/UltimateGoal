@@ -50,11 +50,9 @@ public class SolidRobot {
     public double leftClaw = 0.0, rightClaw = 0.0;
 
     public BNO055IMU gyro;
-    int target = 0;
 
     int skystonePos = 0;
     float pos;
-    boolean detect = false;
 
     public final double motorRatio = 0.71474359;
     private double MINIMUM_DRIVE_POWER = 0.1;
@@ -69,8 +67,6 @@ public class SolidRobot {
 
     color autoColor = color.red;
     program autoProgram = program.pro;
-
-    VectorF translation;
 
     private static final String TFOD_MODEL_ASSET = "Skystone.tflite";
     private static final String LABEL_FIRST_ELEMENT = "Stone";
@@ -160,7 +156,7 @@ public class SolidRobot {
 
         RFC.setDirection(Servo.Direction.REVERSE);
 
-        if(auto) initVuforia();
+        //if(auto) initVuforia();
         //initTfod();
 
 
@@ -212,7 +208,7 @@ public class SolidRobot {
     }
 
     public int gyroPosition(){
-        return (int) gyro.getAngularOrientation().firstAngle * -1;
+        return 15 + (int) gyro.getAngularOrientation().firstAngle * -1;
     }
 
     /**
@@ -386,16 +382,20 @@ public class SolidRobot {
         MINIMUM_DRIVE_POWER = power;
     }
 
-    private void drive(double maxPower, int ticks, DcMotor encoder, int angle, int angleTolerance){
+    private void turn(int angle, double power){
+
+    }
+
+    public void drive(double maxPower, int ticks, DcMotor encoder, int angle, int angleTolerance){
         double d = MINIMUM_DRIVE_POWER; //vertical shift
         double a = maxPower - d; //amplitude
-        double b = 2 * ((2 * Math.PI) / ticks); //period
+        double b = (2 * Math.PI) / (ticks * 2); //period
 
         final double angleCorrectionValue = 1.7;
 
         int startTicks = encoder.getCurrentPosition();
         while(BRW.getCurrentPosition() < startTicks + ticks){
-            double currentPower = a * Math.sin(b * ticks) + d; //Derivative is a(cos(bx) * (db/dt)) + sin(bx) * (db/dx)
+            double currentPower = a * Math.sin(b * (BRW.getCurrentPosition() - startTicks)) + d; //Derivative is a(cos(bx) * (db/dt)) + sin(bx) * (db/dx)
 
             if(gyroPosition() < angle - angleTolerance){
                 //power left side more
@@ -420,6 +420,7 @@ public class SolidRobot {
             }
 
         }
+        powerWheels(0.0);
     }
 
     private void rawEncoderDrive(double power, int ticks, DcMotor encoder){
@@ -533,6 +534,12 @@ public class SolidRobot {
 
         driveBackwards(0.12, 350, BRW);
 
+    }
+
+    public void doDrive(){
+        powerWheels(0.5);
+        doDaSleep(500);
+        powerWheels(0.0);
     }
 
 }
