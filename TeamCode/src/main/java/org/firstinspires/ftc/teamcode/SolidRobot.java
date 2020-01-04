@@ -536,10 +536,50 @@ public class SolidRobot {
 
     }
 
-    public void doDrive(){
-        powerWheels(0.5);
-        doDaSleep(500);
+    private void targetDrive(int ticks){
+        FLW.setTargetPosition(ticks + FLW.getCurrentPosition());
+        BLW.setTargetPosition(ticks + BLW.getCurrentPosition());
+        BRW.setTargetPosition(ticks + BRW.getCurrentPosition());
+        FRW.setTargetPosition(ticks + FRW.getCurrentPosition());
+
+        FLW.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        BLW.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        BRW.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        FRW.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        powerWheels(1.0);
+
+        while(FLW.isBusy() || BLW.isBusy() || BRW.isBusy() || FRW.isBusy()){
+
+        }
         powerWheels(0.0);
     }
+
+    public void redMainAuto(){
+
+        FRW.setTargetPosition(5000);
+        FRW.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        FRW.setPower(1.0);
+        while( FRW.isBusy() )
+        {
+            //doDaSleep(10);
+        }
+        FRW.setPower(0.0);
+
+
+        //frontRightWheel = 0.5;
+        //frontRightWheel = 0.0;
+        /*int startTicks = FRW.getCurrentPosition();
+        powerWheels(0.5);
+        while(FRW.getCurrentPosition() < startTicks + 767.2){
+
+        }
+        powerWheels(0.0);*/
+    }
+
+    public void blueMainAuto(){
+
+    }
+
 
 }

@@ -21,6 +21,7 @@ public class Autonomous extends OpMode{
     Thread auto = new Thread(){
         public void run(){
             telemetry.addData("Status", "Thread Started");
+            robot.redMainAuto();
             /*if(robot.autoColor == SolidRobot.color.red){
                 if(robot.autoProgram == SolidRobot.program.pro){
                     //red main
@@ -38,8 +39,6 @@ public class Autonomous extends OpMode{
                 }
             }*/
 
-            //robot.doDrive();
-            robot.drive(0.3, 1000, robot.BRW, 0, 3);
         }
     };
 
@@ -118,8 +117,8 @@ public class Autonomous extends OpMode{
         telemetry.addData("gyro", robot.gyroPosition());
         telemetry.addData("target", robot.targetVisible);
         telemetry.addData("Skystone Position", robot.skystonePos);
-        telemetry.addData("Pos", robot.pos);
-        robot.setAllPositions();
+        telemetry.addData("BRW", robot.FRW.getCurrentPosition());
+        //robot.setAllPositions();
 
         getVuforiaInfo();
     }
