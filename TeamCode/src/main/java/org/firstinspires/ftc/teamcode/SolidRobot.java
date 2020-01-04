@@ -27,7 +27,13 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGR
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
-import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 
 /**
  * Created by Sam W on 9/17/2019.
@@ -50,11 +56,15 @@ public class SolidRobot {
     public double leftClaw = 0.0, rightClaw = 0.0;
 
     public BNO055IMU gyro;
+    Orientation lastAngles = new Orientation();
+    public double globalAngle = 0.0;
 
     int skystonePos = 0;
     float pos;
 
-    public final double motorRatio = 0.71474359;
+    //encoder ticks per revolution / 2pi
+    private final double ENCODER_TICKS_PER_REVOLUTION = 735.2;
+    private final double INCHES_TO_TICKS = ENCODER_TICKS_PER_REVOLUTION / (2 * Math.PI);
     private double MINIMUM_DRIVE_POWER = 0.1;
 
     enum color{
@@ -127,9 +137,10 @@ public class SolidRobot {
         LC = hardwareMap.servo.get("LC");
         RC = hardwareMap.servo.get("RC");
 
-        if(auto){
+        if(true == true){
             gyro = hardwareMap.get(BNO055IMU.class, "imu");
             gyro.initialize(getParam());
+            resetAngle();
         }
 
         FRW.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -187,9 +198,11 @@ public class SolidRobot {
 
     void doDaSleep( int milli )
     {
-        try {
+        try
+        {
             Thread.sleep(milli);
-        } catch (InterruptedException ex) {
+        } catch (InterruptedException ex)
+        {
 
         }
 
@@ -207,19 +220,65 @@ public class SolidRobot {
         return parameters;
     }
 
-    public int gyroPosition(){
-        return 15 + (int) gyro.getAngularOrientation().firstAngle * -1;
+    public void resetAngle()
+    {
+        lastAngles = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+
+        globalAngle = 0;
     }
 
-    /**
-     * Initialize the Vuforia localization engine.
-     */
+    public double getAngle() {
+        Orientation angles = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double deltaAngle = angles.firstAngle - lastAngles.firstAngle;
+
+        if (deltaAngle < -180)
+            deltaAngle += 360;
+        else if (deltaAngle > 180)
+            deltaAngle -= 360;
+
+        globalAngle += deltaAngle;
+
+        lastAngles = angles;
+
+        return globalAngle;
+    }
+
+    private void turn(double degrees, double power, boolean correct){
+        double  leftPower, rightPower;
+        double startAngle = getAngle();
+        double correctionVal = 1.25;
+
+        if (degrees < startAngle){
+            leftPower = power;
+            rightPower = -power;
+            correctionVal = -1.25;
+        }
+        else if (degrees > startAngle){
+            leftPower = -power;
+            rightPower = power;
+        }
+        else return;
+
+        frontLeftWheel = leftPower;
+        backLeftWheel = leftPower;
+        backRightWheel = rightPower;
+        frontRightWheel = rightPower;
+
+        if (degrees < startAngle) {
+            while (getAngle() == startAngle) {}
+
+            while (getAngle() > degrees) {}
+        }
+        else while (getAngle() < degrees) {}
+
+
+
+        powerWheels(0.0);
+        doDaSleep(250);
+        if(correct) turn(degrees + correctionVal, 0.1, false);
+    }
+
     private void initVuforia() {
-        /*
-         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-         * We can pass Vuforia the handle to a camera preview resource (on the RC phone);
-         * If no camera monitor is desired, use the parameter-less constructor instead (commented out below).
-         */
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
@@ -300,7 +359,7 @@ public class SolidRobot {
 
         front1.setLocation(OpenGLMatrix
                 .translation(-halfField, -quadField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0 , 90)));
+                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 90)));
 
         front2.setLocation(OpenGLMatrix
                 .translation(-halfField, quadField, mmTargetHeight)
@@ -316,7 +375,7 @@ public class SolidRobot {
 
         rear1.setLocation(OpenGLMatrix
                 .translation(halfField, quadField, mmTargetHeight)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0 , -90)));
+                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, -90)));
 
         rear2.setLocation(OpenGLMatrix
                 .translation(halfField, -quadField, mmTargetHeight)
@@ -324,9 +383,9 @@ public class SolidRobot {
 
         // Next, translate the camera lens to where it is on the robot.
         // In this example, it is centered (left to right), but forward of the middle of the robot, and above ground level.
-        final float CAMERA_FORWARD_DISPLACEMENT  = 2.0f * mmPerInch;   // eg: Camera is 2.0 Inches in front of robot center
+        final float CAMERA_FORWARD_DISPLACEMENT = 2.0f * mmPerInch;   // eg: Camera is 2.0 Inches in front of robot center
         final float CAMERA_VERTICAL_DISPLACEMENT = 2.875f * mmPerInch;   // eg: Camera is 2.875 Inches above ground
-        final float CAMERA_LEFT_DISPLACEMENT     = -6.5f * mmPerInch;     // eg: Camera is 6.5 inches from the robot's center line
+        final float CAMERA_LEFT_DISPLACEMENT = -6.5f * mmPerInch;     // eg: Camera is 6.5 inches from the robot's center line
 
         OpenGLMatrix robotFromCamera = OpenGLMatrix
                 .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
@@ -337,23 +396,8 @@ public class SolidRobot {
             ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, parameters.cameraDirection);
         }
 
-        // WARNING:
-        // In this sample, we do not wait for PLAY to be pressed.  Target Tracking is started immediately when INIT is pressed.
-        // This sequence is used to enable the new remote DS Camera Preview feature to be used with this sample.
-        // CONSEQUENTLY do not put any driving commands in this loop.
-        // To restore the normal opmode structure, just un-comment the following line:
-
-        // waitForStart();
-
-        // Note: To use the remote camera preview:
-        // AFTER you hit Init on the Driver Station, use the "options menu" to select "Camera Stream"
-        // Tap the preview window to receive a fresh image.
-
         targetsSkyStone.activate();
     }
-
-
-
 
     /**
      * Initialize the TensorFlow Object Detection engine.
@@ -367,10 +411,6 @@ public class SolidRobot {
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
     }
 
-    public int getPos(DcMotor motor){
-        return motor.getCurrentPosition();
-    }
-
     private void powerWheels(double power){
         frontLeftWheel = power;
         frontRightWheel = power;
@@ -378,165 +418,11 @@ public class SolidRobot {
         backRightWheel = power;
     }
 
-    public void setMinimumDrivePower(double power){
-        MINIMUM_DRIVE_POWER = power;
+    private void drive(double inches){
+        targetDriveWithTicks((int) (inches * INCHES_TO_TICKS * (24 / 22.5)));
     }
 
-    private void turn(int angle, double power){
-
-    }
-
-    public void drive(double maxPower, int ticks, DcMotor encoder, int angle, int angleTolerance){
-        double d = MINIMUM_DRIVE_POWER; //vertical shift
-        double a = maxPower - d; //amplitude
-        double b = (2 * Math.PI) / (ticks * 2); //period
-
-        final double angleCorrectionValue = 1.7;
-
-        int startTicks = encoder.getCurrentPosition();
-        while(BRW.getCurrentPosition() < startTicks + ticks){
-            double currentPower = a * Math.sin(b * (BRW.getCurrentPosition() - startTicks)) + d; //Derivative is a(cos(bx) * (db/dt)) + sin(bx) * (db/dx)
-
-            if(gyroPosition() < angle - angleTolerance){
-                //power left side more
-                frontLeftWheel = currentPower * angleCorrectionValue;
-                backLeftWheel = currentPower * angleCorrectionValue;
-                backRightWheel = currentPower;
-                frontRightWheel = currentPower;
-            }
-            else if(gyroPosition() > angle + angleTolerance){
-                //power right side more
-                frontLeftWheel = currentPower;
-                backLeftWheel = currentPower;
-                backRightWheel = currentPower * angleCorrectionValue;
-                frontRightWheel = currentPower * angleCorrectionValue;
-            }
-            else{
-                //Power both sides the same
-                frontLeftWheel = currentPower;
-                backLeftWheel = currentPower;
-                backRightWheel = currentPower;
-                frontRightWheel = currentPower;
-            }
-
-        }
-        powerWheels(0.0);
-    }
-
-    private void rawEncoderDrive(double power, int ticks, DcMotor encoder){
-        int startTicks = getPos(encoder);
-
-        powerWheels(power);
-        while(getPos(encoder) < startTicks + ticks){
-
-        }
-        powerWheels(0.0);
-    }
-
-    private void correctionDrive(double power, int ticks, DcMotor encoder, int degrees){
-        int startTicks = getPos(encoder);
-        double multiplier = 1.4;
-        powerWheels(power);
-        while(getPos(encoder) < startTicks + ticks){
-            if(gyroPosition() < degrees - 1){
-                frontLeftWheel = power * multiplier;
-                backLeftWheel = power * multiplier;
-                backRightWheel = power;
-                frontRightWheel = power;
-            }
-            else if(gyroPosition() > degrees + 1){
-                frontLeftWheel = power;
-                backLeftWheel = power;
-                backRightWheel = power * multiplier;
-                frontRightWheel = power * multiplier;
-            }
-            else{
-                frontLeftWheel = power;
-                backLeftWheel = power;
-                backRightWheel = power;
-                frontRightWheel = power;
-            }
-        }
-        powerWheels(0.0);
-    }
-
-    private void correctionTimeDrive(double power, int millis, int degrees){
-        double multiplier = 1.4;
-        long startTime = System.currentTimeMillis();
-        while(System.currentTimeMillis() < startTime + millis){
-            if(gyroPosition() < degrees - 1){
-                frontLeftWheel = power * multiplier;
-                backLeftWheel = power * multiplier;
-                backRightWheel = power;
-                frontRightWheel = power;
-            }
-            else if(gyroPosition() > degrees + 1){
-                frontLeftWheel = power;
-                backLeftWheel = power;
-                backRightWheel = power * multiplier;
-                frontRightWheel = power * multiplier;
-            }
-            else{
-                frontLeftWheel = power;
-                backLeftWheel = power;
-                backRightWheel = power;
-                frontRightWheel = power;
-            }
-        }
-        powerWheels(0.0);
-
-    }
-
-    private void rawStrafeLeft(double power, int ticks, DcMotor encoder){
-        int startTicks = getPos(encoder);
-        frontLeftWheel = -power;
-        backLeftWheel = power;
-        backRightWheel = -power;
-        frontRightWheel = power;
-        while(getPos(encoder) > startTicks - ticks){
-
-        }
-        powerWheels(0.0);
-    }
-
-    private void rawStrafeRight(double power, int ticks, DcMotor encoder){
-        int startTicks = getPos(encoder);
-        frontLeftWheel = power;
-        backLeftWheel = -power;
-        backRightWheel = power;
-        frontRightWheel = -power;
-        while(getPos(encoder) < startTicks + ticks){
-
-        }
-        powerWheels(0.0);
-    }
-
-    private void driveBackwards(double power, int ticks, DcMotor encoder){
-        int startTicks = getPos(encoder);
-
-        powerWheels(-power);
-        while(getPos(encoder) > startTicks - ticks){
-
-        }
-        powerWheels(0.0);
-    }
-
-    /**
-     * autoForSomeRandomTeam - An autonomous program that we designed specifically to use in the playoffs of our first tournament with Wrench Dressing 9415
-     */
-    public void autoForSomeRandomTeam(){
-        leftLift = -0.7;
-        rightLift = -0.7;
-        doDaSleep(500);
-        leftLift = 0.0;
-        rightLift = 0.0;
-        doDaSleep(1000);
-
-        driveBackwards(0.12, 350, BRW);
-
-    }
-
-    private void targetDrive(int ticks){
+    private void targetDriveWithTicks(int ticks){
         FLW.setTargetPosition(ticks + FLW.getCurrentPosition());
         BLW.setTargetPosition(ticks + BLW.getCurrentPosition());
         BRW.setTargetPosition(ticks + BRW.getCurrentPosition());
@@ -547,7 +433,47 @@ public class SolidRobot {
         BRW.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         FRW.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        powerWheels(1.0);
+        if(ticks < 0) powerWheels(-1.0);
+        else powerWheels(1.0);
+
+        while(FLW.isBusy() || BLW.isBusy() || BRW.isBusy() || FRW.isBusy()){
+
+        }
+        powerWheels(0.0);
+
+        /*FLW.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BLW.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BRW.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        FRW.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);*/
+    }
+
+    private void strafe(double inches){
+        strafeWithTicks((int) (inches * 154.167));
+    }
+
+    private void strafeWithTicks(int ticks){
+        FLW.setTargetPosition(ticks + FLW.getCurrentPosition());
+        BLW.setTargetPosition(-ticks + BLW.getCurrentPosition());
+        BRW.setTargetPosition(ticks + BRW.getCurrentPosition());
+        FRW.setTargetPosition(-ticks + FRW.getCurrentPosition());
+
+        FLW.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        BLW.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        BRW.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        FRW.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        if(ticks < 0){
+            backLeftWheel = 1.0;
+            frontLeftWheel = -1.0;
+            frontRightWheel = 1.0;
+            backRightWheel = -1.0;
+        }
+        else{
+            backLeftWheel = 1.0;
+            frontLeftWheel = -1.0;
+            frontRightWheel = 1.0;
+            backRightWheel = -1.0;
+        }
 
         while(FLW.isBusy() || BLW.isBusy() || BRW.isBusy() || FRW.isBusy()){
 
@@ -556,25 +482,8 @@ public class SolidRobot {
     }
 
     public void redMainAuto(){
+        strafe(24);
 
-        FRW.setTargetPosition(5000);
-        FRW.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        FRW.setPower(1.0);
-        while( FRW.isBusy() )
-        {
-            //doDaSleep(10);
-        }
-        FRW.setPower(0.0);
-
-
-        //frontRightWheel = 0.5;
-        //frontRightWheel = 0.0;
-        /*int startTicks = FRW.getCurrentPosition();
-        powerWheels(0.5);
-        while(FRW.getCurrentPosition() < startTicks + 767.2){
-
-        }
-        powerWheels(0.0);*/
     }
 
     public void blueMainAuto(){

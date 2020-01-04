@@ -53,8 +53,6 @@ public class Autonomous extends OpMode{
         robot.BRW.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         robot.FRW.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        robot.setMinimumDrivePower(0.1);
-
     }
 
     /**
@@ -106,6 +104,7 @@ public class Autonomous extends OpMode{
      * start - runs once after the start button is pressed
      */
     public void start(){
+        robot.resetAngle();
         auto.start();
     }
 
@@ -114,11 +113,10 @@ public class Autonomous extends OpMode{
      */
     public void loop(){
         telemetry.addData("BRW", robot.BRW.getCurrentPosition());
-        telemetry.addData("gyro", robot.gyroPosition());
+        telemetry.addData("gyro", robot.getAngle());
         telemetry.addData("target", robot.targetVisible);
         telemetry.addData("Skystone Position", robot.skystonePos);
-        telemetry.addData("BRW", robot.FRW.getCurrentPosition());
-        //robot.setAllPositions();
+        robot.setAllPositions();
 
         getVuforiaInfo();
     }

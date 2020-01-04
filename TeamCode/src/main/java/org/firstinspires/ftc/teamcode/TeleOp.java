@@ -45,6 +45,7 @@ public class TeleOp extends OpMode{
     }
 
     public void start(){
+        robot.resetAngle();
     }
 
     /**
@@ -56,7 +57,7 @@ public class TeleOp extends OpMode{
         telemetry.addData("BLW", robot.BLW.getCurrentPosition());
         telemetry.addData("BRW", robot.BRW.getCurrentPosition());
         telemetry.addData("FRW", robot.FRW.getCurrentPosition());
-        //telemetry.addData("gyro", robot.gyroPosition());
+        telemetry.addData("gyro", robot.getAngle());
         //
         // telemetry.addData("Visible Target", robot.targetVisible);
 
