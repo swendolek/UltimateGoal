@@ -137,7 +137,6 @@ public class TeleOp extends OpMode{
         }
 
         robot.setAllPositions();
-
         //getVuforiaInfo();
 
     }

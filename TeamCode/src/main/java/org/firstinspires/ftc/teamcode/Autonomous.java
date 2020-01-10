@@ -20,10 +20,9 @@ public class Autonomous extends OpMode{
 
     Thread auto = new Thread(){
         public void run(){
-            telemetry.addData("Status", "Thread Started");
             robot.redMainAuto();
             /*if(robot.autoColor == SolidRobot.color.red){
-                if(robot.autoProgram == SolidRobot.program.pro){
+                if(robot.autoProgram == SolidRobot.program.main){
                     //red main
                 }
                 else{
@@ -31,7 +30,7 @@ public class Autonomous extends OpMode{
                 }
             }
             else{
-                if(robot.autoProgram == SolidRobot.program.pro){
+                if(robot.autoProgram == SolidRobot.program.main){
                     //blue main
                 }
                 else{
@@ -65,7 +64,7 @@ public class Autonomous extends OpMode{
         if(robot.autoColor  == SolidRobot.color.red) telemetry.addData("Color", "Red");
         else telemetry.addData("Color", "Blue");
 
-        if(robot.autoProgram  == SolidRobot.program.pro) telemetry.addData("Program", "Default");
+        if(robot.autoProgram  == SolidRobot.program.main) telemetry.addData("Program", "Default");
         else telemetry.addData("Program", "Safe");
 
         if(gamepad1.a){
@@ -86,11 +85,11 @@ public class Autonomous extends OpMode{
         if(gamepad1.b){
             if(!bPressed){
                 bPressed = true;
-                if(robot.autoProgram  == SolidRobot.program.pro){
-                    robot.autoProgram  = SolidRobot.program.safe;
+                if(robot.autoProgram  == SolidRobot.program.main){
+                    robot.autoProgram  = SolidRobot.program.alt;
                 }
                 else{
-                    robot.autoProgram  = SolidRobot.program.pro;
+                    robot.autoProgram  = SolidRobot.program.main;
                 }
             }
         }

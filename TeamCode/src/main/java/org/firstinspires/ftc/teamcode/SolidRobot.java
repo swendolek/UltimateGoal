@@ -60,10 +60,9 @@ public class SolidRobot {
     public double globalAngle = 0.0;
 
     int skystonePos = 0;
-    float pos;
 
     //encoder ticks per revolution / 2pi
-    private final double ENCODER_TICKS_PER_REVOLUTION = 735.2;
+    private final double ENCODER_TICKS_PER_REVOLUTION = 383.6;
     private final double INCHES_TO_TICKS = ENCODER_TICKS_PER_REVOLUTION / (2 * Math.PI);
     private double MINIMUM_DRIVE_POWER = 0.1;
 
@@ -72,11 +71,11 @@ public class SolidRobot {
     }
 
     enum program{
-        pro, safe
+        main, alt
     }
 
     color autoColor = color.red;
-    program autoProgram = program.pro;
+    program autoProgram = program.main;
 
     private static final String TFOD_MODEL_ASSET = "Skystone.tflite";
     private static final String LABEL_FIRST_ELEMENT = "Stone";
@@ -105,7 +104,6 @@ public class SolidRobot {
 
     List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
 
-    // Class Members
     public OpenGLMatrix lastLocation = null;
     public VuforiaLocalizer vuforia = null;
     public boolean targetVisible = false;
@@ -167,7 +165,7 @@ public class SolidRobot {
 
         RFC.setDirection(Servo.Direction.REVERSE);
 
-        //if(auto) initVuforia();
+        if(true) initVuforia();
         //initTfod();
 
 
@@ -282,7 +280,7 @@ public class SolidRobot {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
-        // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+         //VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
         parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
@@ -321,7 +319,7 @@ public class SolidRobot {
         VuforiaTrackable rear2 = targetsSkyStone.get(12);
         rear2.setName("Rear Perimeter 2");
 
-        // For convenience, gather together all the trackable objects in one easily-iterable collection */
+        // For convenience, gather together all the trackable objects in one easily-iterable collection
         allTrackables.addAll(targetsSkyStone);
 
         // Set the position of the Stone Target.  Since it's not fixed in position, assume it's at the field origin.
@@ -391,7 +389,9 @@ public class SolidRobot {
                 .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate, phoneZRotate, phoneXRotate));
 
-        /**  Let all the trackable listeners know where the phone is.  */
+        /**  Let all the trackable listeners know where the phone is.
+
+         */
         for (VuforiaTrackable trackable : allTrackables) {
             ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, parameters.cameraDirection);
         }
@@ -440,11 +440,7 @@ public class SolidRobot {
 
         }
         powerWheels(0.0);
-
-        /*FLW.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        BLW.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        BRW.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        FRW.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);*/
+        //I used to set the motors to run without encoder here
     }
 
     private void strafe(double inches){
@@ -482,13 +478,10 @@ public class SolidRobot {
     }
 
     public void redMainAuto(){
-        strafe(24);
 
     }
 
     public void blueMainAuto(){
 
     }
-
-
 }
