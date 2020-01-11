@@ -50,6 +50,22 @@ public class TeleOpRevamped extends OpMode{
             robot.rightIntake = -gamepad1.left_trigger;
             robot.leftIntake = -gamepad1.left_trigger;
         }
+        else if(gamepad1.a){
+            robot.rightIntake = 0.1;
+            robot.leftIntake = 0.1;
+        }
+        else if(gamepad1.b){
+            robot.rightIntake = 0.2;
+            robot.leftIntake = 0.2;
+        }
+        else if(gamepad1.x){
+            robot.rightIntake = 0.3;
+            robot.leftIntake = 0.3;
+        }
+        else if(gamepad1.a){
+            robot.rightIntake = 0.4;
+            robot.leftIntake = 0.4;
+        }
         else{
             robot.rightIntake = 0.0;
             robot.leftIntake = 0.0;

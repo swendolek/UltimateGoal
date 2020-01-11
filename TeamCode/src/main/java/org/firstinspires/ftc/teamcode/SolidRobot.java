@@ -59,12 +59,14 @@ public class SolidRobot {
     Orientation lastAngles = new Orientation();
     public double globalAngle = 0.0;
 
-    int skystonePos = 0;
+    //int skystonePos = 0;
 
     //encoder ticks per revolution / 2pi
     private final double ENCODER_TICKS_PER_REVOLUTION = 383.6;
     private final double INCHES_TO_TICKS = ENCODER_TICKS_PER_REVOLUTION / (2 * Math.PI);
     private double MINIMUM_DRIVE_POWER = 0.1;
+
+    public int blockPos = -1;
 
     enum color{
         red, blue
@@ -242,6 +244,12 @@ public class SolidRobot {
     }
 
     private void turn(double degrees, double power, boolean correct){
+
+        FLW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BLW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BRW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        FRW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         double  leftPower, rightPower;
         double startAngle = getAngle();
         double correctionVal = 1.25;
@@ -263,17 +271,52 @@ public class SolidRobot {
         frontRightWheel = rightPower;
 
         if (degrees < startAngle) {
+            while (getAngle() == startAngle) {doDaSleep(10);}
+
+            while (getAngle() > degrees) {doDaSleep(10);}
+        }
+        else while (getAngle() < degrees) {doDaSleep(10);}
+
+        powerWheels(0.0);
+        if(correct) turn(degrees + correctionVal, 0.1, false);
+    }
+
+    private void correct(double initDegrees){
+        FLW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BLW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BRW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        FRW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        double  leftPower, rightPower;
+        double startAngle = getAngle();
+        double correctionVal = 1.25;
+
+        if (initDegrees < startAngle){
+            leftPower = 0.1;
+            rightPower = -0.1;
+            correctionVal = -1.25;
+        }
+        else if (initDegrees > startAngle){
+            leftPower = -0.1;
+            rightPower = 0.1;
+        }
+        else return;
+
+        double degrees = initDegrees + correctionVal;
+
+        frontLeftWheel = leftPower;
+        backLeftWheel = leftPower;
+        backRightWheel = rightPower;
+        frontRightWheel = rightPower;
+
+        if (degrees < startAngle) {
             while (getAngle() == startAngle) {}
 
             while (getAngle() > degrees) {}
         }
         else while (getAngle() < degrees) {}
 
-
-
         powerWheels(0.0);
-        doDaSleep(250);
-        if(correct) turn(degrees + correctionVal, 0.1, false);
     }
 
     private void initVuforia() {
@@ -418,11 +461,11 @@ public class SolidRobot {
         backRightWheel = power;
     }
 
-    private void drive(double inches){
-        targetDriveWithTicks((int) (inches * INCHES_TO_TICKS * (24 / 22.5)));
+    private void drive(double inches, double power){
+        targetDriveWithTicks((int) (inches * INCHES_TO_TICKS * (24 / 22.5)), power);
     }
 
-    private void targetDriveWithTicks(int ticks){
+    private void targetDriveWithTicks(int ticks, double power){
         FLW.setTargetPosition(ticks + FLW.getCurrentPosition());
         BLW.setTargetPosition(ticks + BLW.getCurrentPosition());
         BRW.setTargetPosition(ticks + BRW.getCurrentPosition());
@@ -433,8 +476,8 @@ public class SolidRobot {
         BRW.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         FRW.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        if(ticks < 0) powerWheels(-1.0);
-        else powerWheels(1.0);
+        if(ticks < 0) powerWheels(-power);
+        else powerWheels(power);
 
         while(FLW.isBusy() || BLW.isBusy() || BRW.isBusy() || FRW.isBusy()){
 
@@ -443,11 +486,31 @@ public class SolidRobot {
         //I used to set the motors to run without encoder here
     }
 
-    private void strafe(double inches){
-        strafeWithTicks((int) (inches * 154.167));
+    public void powerLift(double power){
+        leftLift = power * 0.7;
+        rightLift = power * 0.7;
     }
 
-    private void strafeWithTicks(int ticks){
+    public void timeDrive(double power, long millis){
+        FLW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BLW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BRW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        FRW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        powerWheels(power);
+        long startTime = System.currentTimeMillis();
+        while(System.currentTimeMillis() < startTime + millis){
+
+        }
+        powerWheels(0.0);
+    }
+
+    private void strafe(double inches, double power){
+        strafeWithTicks((int) (inches * 154.167), power);
+    }
+
+    private void strafeWithTicks(int ticks, double power){
+
         FLW.setTargetPosition(ticks + FLW.getCurrentPosition());
         BLW.setTargetPosition(-ticks + BLW.getCurrentPosition());
         BRW.setTargetPosition(ticks + BRW.getCurrentPosition());
@@ -465,10 +528,10 @@ public class SolidRobot {
             backRightWheel = -1.0;
         }
         else{
-            backLeftWheel = 1.0;
-            frontLeftWheel = -1.0;
-            frontRightWheel = 1.0;
-            backRightWheel = -1.0;
+            backLeftWheel = -1.0;
+            frontLeftWheel = 1.0;
+            frontRightWheel = -1.0;
+            backRightWheel = 1.0;
         }
 
         while(FLW.isBusy() || BLW.isBusy() || BRW.isBusy() || FRW.isBusy()){
@@ -478,10 +541,74 @@ public class SolidRobot {
     }
 
     public void redMainAuto(){
+        drive(16, 1.0);
+        turn(-90 + 5, 0.5, true);
+        doDaSleep(250);
+        if(targetVisible) blockPos = 0;
+        else{
+            drive(8, 0.5);
+            doDaSleep(250);
+            if(targetVisible) blockPos = 1;
+            else blockPos = 2;
+        }
+
+        if(blockPos == 0){
+
+        }
+        else if(blockPos == 1){
+
+        }
+        else{
+            drive(-6.5, 0.5);
+            strafe(-12, 0.25);
+
+            //correct(-90);
+
+            powerLift(-1.0);
+            doDaSleep(900);
+            leftClaw = 0.6;
+            rightClaw = 0.6;
+            doDaSleep(500);
+            powerLift(0.0);
+
+            timeDrive(0.25, 250);
+
+            doDaSleep(1000);
+
+            leftClaw = 1.0;
+            rightClaw = 1.0;
+
+            doDaSleep(500);
+
+            turn(-35 - 5, 0.5, true);
+            drive(-18, 1.0);
+            turn(-90 + 5, 0.5, true);
+            drive(-36, 1.0);
+
+            turn(0 + 5, 0.5, true);
+            drive(9, 1.0);
+            rightClaw = 0.6;
+            leftClaw = 0.6;
+            doDaSleep(250);
+            drive(-8, 1.0);
+            turn(-90, 0.5, true);
+
+            drive(72, 1.0);
+
+        }
 
     }
 
     public void blueMainAuto(){
 
+    }
+
+    public void foundationAuto(){
+        drive(30.5, 1.0);
+        strafe(6, 0.25);
+        rightFoundationClaw = 0.36;
+        leftFoundationClaw = 0.36;
+        timeDrive(0.15, 5000);
+        strafe(52, 0.25);
     }
 }

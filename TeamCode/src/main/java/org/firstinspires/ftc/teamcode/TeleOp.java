@@ -137,7 +137,7 @@ public class TeleOp extends OpMode{
         }
 
         robot.setAllPositions();
-        //getVuforiaInfo();
+        getVuforiaInfo();
 
     }
 
@@ -185,6 +185,8 @@ public class TeleOp extends OpMode{
             VectorF translation = robot.lastLocation.getTranslation();
             telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
                     translation.get(0) / robot.mmPerInch, translation.get(1) / robot.mmPerInch, translation.get(2) / robot.mmPerInch);
+
+
 
             // express the rotation of the robot in degrees.
             Orientation rotation = Orientation.getOrientation(robot.lastLocation, EXTRINSIC, XYZ, DEGREES);
