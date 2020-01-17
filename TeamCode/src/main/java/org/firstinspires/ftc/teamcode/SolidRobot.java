@@ -544,6 +544,181 @@ public class SolidRobot {
 
     public void redMainAuto(){
 
+        drive(16, 1.0);
+        turn(75, 0.5, true, 90);
+        doDaSleep(500);
+        if(targetVisible) blockPos = 0;
+        else{
+            drive(6, 0.5);
+            doDaSleep(500);
+            if(targetVisible) blockPos = 1;
+            else blockPos = 2;
+            correct(91, false);
+        }
+
+        if(blockPos == 0){
+            correct(91, false);
+            drive(5.5, 1.0);
+            strafe(13, 0.15);
+
+            correct(90, false);
+
+            powerLift(-1.0);
+            doDaSleep(500);
+            leftClaw = 0.6;
+            rightClaw = 0.6;
+            doDaSleep(500);
+            powerLift(0.0);
+
+            timeDrive(0.5, 150);
+
+            doDaSleep(500);
+
+            leftClaw = 1.0;
+            rightClaw = 1.0;
+
+            doDaSleep(250);
+
+            turn(45, 1.0, true, 35);
+            drive(-18, 1.0);
+            turn(70, 1.0, true, 90);
+            correct(90, true);
+            drive(-72, 1.0);
+
+            powerLift(-0.5);
+            turn(10, 0.5, false, 0);
+            doDaSleep(500);
+            powerWheels(0.2);
+            doDaSleep(750);
+            powerLift(0.0);
+
+            doDaSleep(500);
+
+            leftClaw = 0.6;
+            rightClaw = 0.6;
+
+
+            //
+            rightFoundationClaw = 0.36;
+            leftFoundationClaw = 0.36;
+            doDaSleep(500);
+
+            //correct(0);
+            timeDrive(-0.3, 4000);
+
+            rightFoundationClaw = 0.0;
+            leftFoundationClaw = 0.0;
+
+        }
+        else if(blockPos == 1){
+
+            drive(-13.5, 1.0);
+            strafe(13, 0.15);
+
+            correct(90, false);
+
+            powerLift(-1.0);
+            doDaSleep(500);
+            leftClaw = 0.6;
+            rightClaw = 0.6;
+            doDaSleep(500);
+            powerLift(0.0);
+
+            timeDrive(0.5, 150);
+
+            doDaSleep(500);
+
+            leftClaw = 1.0;
+            rightClaw = 1.0;
+
+            doDaSleep(250);
+
+            turn(45, 1.0, true, 35);
+            drive(-18, 1.0);
+            turn(70, 1.0, true, 90);
+            correct(90, true);
+            drive(-65, 1.0);
+
+            powerLift(-0.5);
+            turn(10, 0.5, false, 0);
+            doDaSleep(500);
+            powerWheels(0.2);
+            doDaSleep(750);
+            powerLift(0.0);
+
+            doDaSleep(500);
+
+            leftClaw = 0.6;
+            rightClaw = 0.6;
+
+
+            //
+            rightFoundationClaw = 0.36;
+            leftFoundationClaw = 0.36;
+            doDaSleep(500);
+
+            //correct(0);
+            timeDrive(-0.3, 4000);
+
+            rightFoundationClaw = 0.0;
+            leftFoundationClaw = 0.0;
+
+
+        }
+        else{
+            drive(-5.5, 1.0);
+            strafe(13, 0.15);
+
+            correct(90, false);
+
+            powerLift(-1.0);
+            doDaSleep(500);
+            leftClaw = 0.6;
+            rightClaw = 0.6;
+            doDaSleep(500);
+            powerLift(0.0);
+
+            timeDrive(0.5, 150);
+
+            doDaSleep(500);
+
+            leftClaw = 1.0;
+            rightClaw = 1.0;
+
+            doDaSleep(250);
+
+            turn(45, 1.0, true, 35);
+            drive(-18, 1.0);
+            turn(70, 1.0, true, 90);
+            correct(90, true);
+            drive(-72, 1.0);
+
+            powerLift(-0.5);
+            turn(10, 0.5, false, 0);
+            doDaSleep(500);
+            powerWheels(0.2);
+            doDaSleep(750);
+            powerLift(0.0);
+
+            doDaSleep(500);
+
+            leftClaw = 0.6;
+            rightClaw = 0.6;
+
+
+            //
+            rightFoundationClaw = 0.36;
+            leftFoundationClaw = 0.36;
+            doDaSleep(500);
+
+            //correct(0);
+            timeDrive(-0.3, 4000);
+
+            rightFoundationClaw = 0.0;
+            leftFoundationClaw = 0.0;
+
+
+        }
 
     }
 
