@@ -603,6 +603,54 @@ public class SolidRobot {
 
     }
 
+    public void redAltAuto(){
+        strafe(6,0.25);
+        timeDrive(-0.2, 1000);
+        drive(29.5, 1.0);
+
+        FLW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BLW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BRW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        FRW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        powerWheels(0.1);
+        doDaSleep(500);
+        rightFoundationClaw = 0.36;
+        leftFoundationClaw = 0.36;
+        doDaSleep(500);
+        timeDrive(-0.15, 5000);
+
+        powerLift(-1.0);
+        doDaSleep(1400);
+        powerLift(0.0);
+
+        strafe(-28, 0.25);
+    }
+
+    public void blueAltAuto(){
+        strafe(-6,0.25);
+        timeDrive(-0.2, 1000);
+        drive(29.5, 1.0);
+
+        FLW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BLW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BRW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        FRW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        powerWheels(0.1);
+        doDaSleep(500);
+        rightFoundationClaw = 0.36;
+        leftFoundationClaw = 0.36;
+        doDaSleep(500);
+        timeDrive(-0.15, 5000);
+
+        powerLift(-1.0);
+        doDaSleep(1400);
+        powerLift(0.0);
+
+        strafe(28, 0.25);
+    }
+
     public void foundationAuto(){
         drive(30.5, 1.0);
         strafe(6, 0.25);

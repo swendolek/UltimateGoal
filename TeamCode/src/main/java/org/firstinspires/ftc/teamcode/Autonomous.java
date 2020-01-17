@@ -26,24 +26,27 @@ public class Autonomous extends OpMode{
 
     Thread auto = new Thread(){
         public void run(){
-            robot.redMainAuto();
+            //robot.redMainAuto();
 
-            /*if(robot.autoColor == SolidRobot.color.red){
+            if(robot.autoColor == SolidRobot.color.red){
                 if(robot.autoProgram == SolidRobot.program.main){
                     //red main
+                    robot.redMainAuto();
                 }
                 else{
                     //red alt
+                    robot.redAltAuto();
                 }
             }
             else{
                 if(robot.autoProgram == SolidRobot.program.main){
-                    //blue main
+                    robot.blueMainAuto();
                 }
                 else{
                     //blue alt
+                    robot.blueAltAuto();
                 }
-            }*/
+            }
 
         }
     };
