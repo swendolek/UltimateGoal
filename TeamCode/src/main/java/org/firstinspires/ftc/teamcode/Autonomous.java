@@ -127,7 +127,7 @@ public class Autonomous extends OpMode{
         telemetry.addData("Skystone Position", robot.blockPos);
         robot.setAllPositions();
 
-        //getVuforiaPositions();
+        getVuforiaPositions();
     }
 
     public void getVuforiaInfo() {
