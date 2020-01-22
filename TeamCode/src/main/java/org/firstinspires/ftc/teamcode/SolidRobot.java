@@ -73,7 +73,7 @@ public class SolidRobot {
     }
 
     enum program{
-        main, alt
+        main, alt, minus
     }
 
     color autoColor = color.red;
@@ -546,6 +546,7 @@ public class SolidRobot {
 
         drive(16, 1.0);
         turn(75, 0.5, true, 90);
+        correct(90, true);
         doDaSleep(500);
         if(targetVisible) blockPos = 0;
         else{
@@ -666,7 +667,7 @@ public class SolidRobot {
 
         }
         else{
-            drive(-5.5, 1.0);
+            drive(-4.5, 1.0);
             strafe(13, 0.15);
 
             correct(90, false);
@@ -901,6 +902,8 @@ public class SolidRobot {
     }
 
     public void redAltAuto(){
+        doDaSleep(5000);
+
         strafe(6,0.25);
         timeDrive(-0.2, 1000);
         drive(29.5, 1.0);
@@ -925,6 +928,7 @@ public class SolidRobot {
         leftFoundationClaw = 0.0;
 
         strafe(-28, 0.25);
+        timeDrive(-0.2, 1000);
     }
 
     public void blueAltAuto(){
@@ -998,6 +1002,7 @@ public class SolidRobot {
 
             powerLift(-0.5);
             turn(10, 0.5, false, 0);
+            powerLift(0.0);
             leftClaw = 0.6;
             rightClaw = 0.6;
             drive(-8, 1.0);
@@ -1036,6 +1041,7 @@ public class SolidRobot {
 
             powerLift(-0.5);
             turn(10, 0.5, false, 0);
+            powerLift(0.0);
             leftClaw = 0.6;
             rightClaw = 0.6;
             drive(-8, 1.0);
@@ -1074,6 +1080,7 @@ public class SolidRobot {
 
             powerLift(-0.5);
             turn(10, 0.5, false, 0);
+            powerLift(0.0);
             leftClaw = 0.6;
             rightClaw = 0.6;
             drive(-8, 1.0);
@@ -1128,6 +1135,7 @@ public class SolidRobot {
 
             powerLift(-0.5);
             turn(-10, 0.5, false, 0);
+            powerLift(0.0);
             leftClaw = 0.6;
             rightClaw = 0.6;
             drive(-8, 1.0);
@@ -1166,6 +1174,7 @@ public class SolidRobot {
 
             powerLift(-0.5);
             turn(-10, 0.5, false, 0);
+            powerLift(0.0);
             leftClaw = 0.6;
             rightClaw = 0.6;
             drive(-8, 1.0);
@@ -1204,6 +1213,7 @@ public class SolidRobot {
 
             powerLift(-0.5);
             turn(-10, 0.5, false, 0);
+            powerLift(0.0);
             leftClaw = 0.6;
             rightClaw = 0.6;
             drive(-8, 1.0);
@@ -1223,4 +1233,144 @@ public class SolidRobot {
         timeDrive(0.15, 5000);
         strafe(52, 0.25);
     }
+
+    public void steroids(){
+
+        drive(16, 1.0);
+        turn(75, 0.5, true, 90);
+        correct(90, true);
+        doDaSleep(500);
+        if(targetVisible) blockPos = 0;
+        else{
+            drive(6, 0.5);
+            doDaSleep(500);
+            if(targetVisible) blockPos = 1;
+            else blockPos = 2;
+            correct(91, false);
+        }
+
+        if(blockPos == 0){
+            correct(91, false);
+            drive(5.5, 1.0);
+            strafe(13, 0.15);
+
+            correct(90, false);
+
+            powerLift(-1.0);
+            doDaSleep(500);
+            leftClaw = 0.6;
+            rightClaw = 0.6;
+            doDaSleep(500);
+            powerLift(0.0);
+
+            timeDrive(0.5, 150);
+
+            doDaSleep(500);
+
+            leftClaw = 1.0;
+            rightClaw = 1.0;
+
+            doDaSleep(250);
+
+            turn(10, 0.5, true, 0);
+            correct(0, true);
+            timeDrive(-0.3, 4000);
+
+
+            drive(6, 0.5);
+
+            turn(-75, 0.3, true, -90);
+
+            drive(70, 1.0);
+
+            leftClaw = 0.6;
+            rightClaw = 0.6;
+            doDaSleep(500);
+            drive(-15, 1.0);
+
+        }
+        else if(blockPos == 1){
+
+            drive(-13.5, 1.0);
+            strafe(13, 0.15);
+
+            correct(90, false);
+
+            powerLift(-1.0);
+            doDaSleep(500);
+            leftClaw = 0.6;
+            rightClaw = 0.6;
+            doDaSleep(500);
+            powerLift(0.0);
+
+            timeDrive(0.5, 150);
+
+            doDaSleep(500);
+
+            leftClaw = 1.0;
+            rightClaw = 1.0;
+
+            doDaSleep(250);
+
+            turn(10, 0.5, true, 0);
+            correct(0, true);
+            timeDrive(-0.3, 4000);
+
+
+            drive(6, 0.5);
+
+            turn(-80, 0.3, true, -90);
+
+            drive(65, 1.0);
+
+            leftClaw = 0.6;
+            rightClaw = 0.6;
+            doDaSleep(500);
+            drive(-15, 1.0);
+
+
+        }
+        else{
+            drive(-4.5, 1.0);
+            strafe(13, 0.15);
+
+            correct(90, false);
+
+            powerLift(-1.0);
+            doDaSleep(500);
+            leftClaw = 0.6;
+            rightClaw = 0.6;
+            doDaSleep(500);
+            powerLift(0.0);
+
+            timeDrive(0.5, 150);
+
+            doDaSleep(500);
+
+            leftClaw = 1.0;
+            rightClaw = 1.0;
+
+            doDaSleep(250);
+
+            turn(10, 0.5, true, 0);
+            correct(0, true);
+            timeDrive(-0.3, 4000);
+
+
+            drive(6, 0.5);
+
+            turn(-80, 0.3, true, -90);
+
+            drive(65, 1.0);
+
+            leftClaw = 0.6;
+            rightClaw = 0.6;
+            doDaSleep(500);
+            drive(-15, 1.0);
+
+
+        }
+
+    }
+
 }

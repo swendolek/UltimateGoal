@@ -31,7 +31,10 @@ public class Autonomous extends OpMode{
             if(robot.autoColor == SolidRobot.color.red){
                 if(robot.autoProgram == SolidRobot.program.main){
                     //red main
-                    robot.redMainAuto();
+                    robot.steroids();
+                }
+                else if(robot.autoProgram == SolidRobot.program.minus){
+                    robot.redAutoMinusFoundation();
                 }
                 else{
                     //red alt
@@ -41,6 +44,9 @@ public class Autonomous extends OpMode{
             else{
                 if(robot.autoProgram == SolidRobot.program.main){
                     robot.blueMainAuto();
+                }
+                else if(robot.autoProgram == SolidRobot.program.minus){
+                    robot.blueAutoMinusFoundation();
                 }
                 else{
                     //blue alt
@@ -75,6 +81,7 @@ public class Autonomous extends OpMode{
         else telemetry.addData("Color", "Blue");
 
         if(robot.autoProgram  == SolidRobot.program.main) telemetry.addData("Program", "Default");
+        else if(robot.autoProgram == SolidRobot.program.minus) telemetry.addData("Program", "Minus");
         else telemetry.addData("Program", "Safe");
 
         if(gamepad1.a){
@@ -96,6 +103,10 @@ public class Autonomous extends OpMode{
             if(!bPressed){
                 bPressed = true;
                 if(robot.autoProgram  == SolidRobot.program.main){
+                    robot.autoProgram = SolidRobot.program.minus;
+
+                }
+                else if(robot.autoProgram == SolidRobot.program.minus){
                     robot.autoProgram  = SolidRobot.program.alt;
                 }
                 else{
