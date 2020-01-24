@@ -28,32 +28,7 @@ public class Autonomous extends OpMode{
         public void run(){
             //robot.redMainAuto();
 
-            if(robot.autoColor == SolidRobot.color.red){
-                if(robot.autoProgram == SolidRobot.program.main){
-                    //red main
-                    robot.steroids();
-                }
-                else if(robot.autoProgram == SolidRobot.program.minus){
-                    robot.redAutoMinusFoundation();
-                }
-                else{
-                    //red alt
-                    robot.redAltAuto();
-                }
-            }
-            else{
-                if(robot.autoProgram == SolidRobot.program.main){
-                    robot.blueMainAuto();
-                }
-                else if(robot.autoProgram == SolidRobot.program.minus){
-                    robot.blueAutoMinusFoundation();
-                }
-                else{
-                    //blue alt
-                    robot.blueAltAuto();
-                }
-            }
-
+            robot.blueSideAuto();
         }
     };
 
