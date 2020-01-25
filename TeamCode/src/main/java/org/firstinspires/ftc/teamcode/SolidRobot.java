@@ -336,7 +336,6 @@ public class SolidRobot {
 
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
         // Load the data sets for the trackable objects. These particular data
         // sets are stored in the 'assets' part of our application.
         VuforiaTrackables targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
@@ -553,6 +552,79 @@ public class SolidRobot {
         powerWheels(0.0);
     }
 
+    public void powerStrafeWithTicks(double power, int absTicks){
+
+        setMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        int startTicks = BRW.getCurrentPosition();
+        backLeftWheel = -power;
+        frontLeftWheel = power;
+        frontRightWheel = -power;
+        backRightWheel = power;
+        if(power > 0) while(BRW.getCurrentPosition() < startTicks + absTicks){ }
+        else while(BRW.getCurrentPosition() > startTicks - absTicks){ }
+        powerWheels(0.0);
+    }
+
+    public void powerCorrectionDrive(double power, int ticks, double correctionDegree){
+        double correctionVal = 1.2;
+
+        setMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        int startTicks = BRW.getCurrentPosition();
+        powerWheels(power);
+        while(BRW.getCurrentPosition() < startTicks + ticks){
+            if(getAngle() > correctionDegree + 0.5){
+                frontLeftWheel = power * correctionVal;
+                backLeftWheel = power * correctionVal;
+                backRightWheel = power;
+                frontRightWheel = power;
+            }
+            else if(getAngle() < correctionDegree - 0.5){
+                frontLeftWheel = power;
+                backLeftWheel = power;
+                backRightWheel = power * correctionVal;
+                frontRightWheel = power * correctionVal;
+            }
+            else{
+                frontLeftWheel = power;
+                backLeftWheel = power;
+                backRightWheel = power;
+                frontRightWheel = power;
+            }
+        }
+        powerWheels(0.0);
+    }
+
+    public void powerCorrectionDriveBack(double power, int ticks, double correctionDegree){
+        double correctionVal = 1.2;
+
+        setMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        int startTicks = BRW.getCurrentPosition();
+        powerWheels(power);
+        while(BRW.getCurrentPosition() > startTicks - ticks){
+            if(getAngle() > correctionDegree + 0.5){
+                frontLeftWheel = power;
+                backLeftWheel = power;
+                backRightWheel = power * correctionVal;
+                frontRightWheel = power * correctionVal;
+            }
+            else if(getAngle() < correctionDegree - 0.5){
+                frontLeftWheel = power * correctionVal;
+                backLeftWheel = power * correctionVal;
+                backRightWheel = power;
+                frontRightWheel = power;
+            }
+            else{
+                frontLeftWheel = power;
+                backLeftWheel = power;
+                backRightWheel = power;
+                frontRightWheel = power;
+            }
+        }
+        powerWheels(0.0);
+    }
+
     public void setMotorMode(DcMotor.RunMode mode){
         FLW.setMode(mode);
         BLW.setMode(mode);
@@ -562,29 +634,91 @@ public class SolidRobot {
     }
 
     public void blueSideAuto(){
-        drive(22, 1.0);
-        correct(0, true);
-        strafe(8, 0.025);
-        correct(0, true);
-        doDaSleep(1000);
-        correct(8, true);
-        strafe(8, 0.025);
-        /*int val = 685;
-        powerStrafe(0.1);
-        int startTicksBRW = BRW.getCurrentPosition(), startTicksFRW = FRW.getCurrentPosition();
-        setMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        while((BRW.getCurrentPosition() < startTicksBRW + val) || (FRW.getCurrentPosition() > startTicksFRW - val)){
-            powerStrafe(0.1);
-            if(BRW.getCurrentPosition() < startTicksBRW + val){
-                backRightWheel = 0.0;
-                frontLeftWheel = 0.0;
-            }
-            else if(FRW.getCurrentPosition() > startTicksFRW - val){
-                backLeftWheel = 0.0;
-                frontRightWheel = 0.0;
+        drive(20, 1.0);
+        //correct(0, true);
+        doDaSleep(1250);
+        if(targetVisible) blockPos = 0;
+        else{
+            powerStrafeWithTicks(0.15, 525);
+            correct(0, true);
+            doDaSleep(1250);
+            if(targetVisible) blockPos = 1;
+            else{
+                blockPos = 2;
+                powerStrafeWithTicks(0.15, 525);
+                correct(0, true);
             }
         }
-        powerWheels(0.0);*/
+
+        pickUpBlock();
+
+        turn(75, 0.5, false, 90);
+        doDaSleep(500);
+        correct(90, true);
+
+        int move = 35;
+        if(blockPos == 1) move += 8;
+        else if(blockPos == 2) move += 16;
+        powerCorrectionDrive(.9, (int) (move * INCHES_TO_TICKS * (24 / 22.5)), 90);
+
+        leftClaw = 0.6;
+        rightClaw = 0.6;
+
+        correct(90, true);
+
+        doDaSleep(500);
+
+        int moveTwo = 60;
+        if(blockPos == 1) moveTwo += 8;
+        else if(blockPos == 2) moveTwo += 16;
+
+        powerCorrectionDriveBack(-0.9, (int) ((moveTwo) * INCHES_TO_TICKS * (24 / 22.5)), 90);
+
+
+        turn(15, 0.5, true, 0);
+        correct(0, true);
+
+        pickUpBlock();
+
+        turn(75, 0.5, false, 0);
+        correct(90, true);
+
+        int moveThree = moveTwo;
+
+        powerCorrectionDrive(1.0, (int) (moveThree * INCHES_TO_TICKS * (24 / 22.5)), 90);
+
+        leftClaw = 0.6;
+        rightClaw = 0.6;
+
+        doDaSleep(500);
+
+        drive(-12, 1.0);
+
+        powerStrafe(0.1);
+        doDaSleep(1000);
+        powerStrafe(0.0);
+
+    }
+
+    public void pickUpBlock(){
+        powerLift(-1.0);
+        leftClaw = 0.9;
+        rightClaw = 0.9;
+        doDaSleep(400);
+        powerLift(0.0);
+        doDaSleep(200);
+        int startTicks = BRW.getCurrentPosition();
+        timeDrive(0.3, 750);
+        leftClaw = 0.6;
+        rightClaw = 0.6;
+        timeDrive(0.3, 250);
+        doDaSleep(200);
+        timeDrive(0.3, 600);
+        leftClaw = 1.0;
+        rightClaw = 1.0;
+        doDaSleep(500);
+        int finalTicks = BRW.getCurrentPosition();
+        targetDriveWithTicks(startTicks - finalTicks, 1.0);
     }
 
 

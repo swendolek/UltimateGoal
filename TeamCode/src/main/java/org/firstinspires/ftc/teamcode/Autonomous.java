@@ -27,7 +27,9 @@ public class Autonomous extends OpMode{
     Thread auto = new Thread(){
         public void run(){
             //robot.redMainAuto();
-
+            robot.leftClaw = 1.0;
+            robot.rightClaw = 1.0;
+            //robot.blueSideAuto();
             robot.blueSideAuto();
         }
     };
@@ -113,7 +115,7 @@ public class Autonomous extends OpMode{
         telemetry.addData("Skystone Position", robot.blockPos);
         robot.setAllPositions();
 
-        getVuforiaPositions();
+        getVuforiaInfo();
     }
 
     public void getVuforiaInfo() {
