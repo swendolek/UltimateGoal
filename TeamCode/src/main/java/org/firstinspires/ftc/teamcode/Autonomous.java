@@ -30,7 +30,32 @@ public class Autonomous extends OpMode{
             robot.leftClaw = 1.0;
             robot.rightClaw = 1.0;
             //robot.blueSideAuto();
-            robot.blueSideAuto();
+            if(robot.autoColor == SolidRobot.color.red) {
+                if (robot.autoProgram == SolidRobot.program.main) {
+                    //red main
+                    robot.redAuto();
+                } else if (robot.autoProgram == SolidRobot.program.foundationCenter) {
+                    robot.redFoundationCenterAuto();
+                } else if(robot.autoProgram == SolidRobot.program.foundationWall){
+                    robot.redFoundationWallAuto();
+                }
+                else{
+
+                }
+            }
+            else{
+                if (robot.autoProgram == SolidRobot.program.main) {
+                    //red main
+                    robot.blueSideAuto();
+                } else if (robot.autoProgram == SolidRobot.program.foundationCenter) {
+                    robot.blueFoundationCenterAuto();
+                } else if(robot.autoProgram == SolidRobot.program.foundationWall){
+                    robot.blueFoundationWallAuto();
+                }
+                else{
+
+                }
+            }
         }
     };
 
@@ -58,7 +83,8 @@ public class Autonomous extends OpMode{
         else telemetry.addData("Color", "Blue");
 
         if(robot.autoProgram  == SolidRobot.program.main) telemetry.addData("Program", "Default");
-        else if(robot.autoProgram == SolidRobot.program.minus) telemetry.addData("Program", "Minus");
+        else if(robot.autoProgram == SolidRobot.program.foundationCenter) telemetry.addData("Program", "Foundation; Park center");
+        else if(robot.autoProgram == SolidRobot.program.foundationWall) telemetry.addData("Program", "Foundation; Park wall");
         else telemetry.addData("Program", "Safe");
 
         if(gamepad1.a){
@@ -80,11 +106,11 @@ public class Autonomous extends OpMode{
             if(!bPressed){
                 bPressed = true;
                 if(robot.autoProgram  == SolidRobot.program.main){
-                    robot.autoProgram = SolidRobot.program.minus;
+                    robot.autoProgram = SolidRobot.program.foundationCenter;
 
                 }
-                else if(robot.autoProgram == SolidRobot.program.minus){
-                    robot.autoProgram  = SolidRobot.program.alt;
+                else if(robot.autoProgram == SolidRobot.program.foundationCenter){
+                    robot.autoProgram  = SolidRobot.program.foundationWall;
                 }
                 else{
                     robot.autoProgram  = SolidRobot.program.main;

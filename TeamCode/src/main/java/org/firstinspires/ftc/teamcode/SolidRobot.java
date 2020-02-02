@@ -48,7 +48,7 @@ public class SolidRobot {
     public DcMotor FLW, FRW, BRW, BLW; //Drive motors
     public double frontLeftWheel = 0.0, frontRightWheel = 0.0, backRightWheel = 0.0, backLeftWheel = 0.0;
 
-    public CRServo LL, RL; //Double-reverse four-bar lift vex motors
+    public CRServo TLL, BLL, BRL, TRL; //Double-reverse four-bar lift vex motors
     public double leftLift = 0.0, rightLift = 0.0;
 
     public Servo RFC, LFC; //Foundation grabber servos
@@ -76,7 +76,7 @@ public class SolidRobot {
     }
 
     enum program{
-        main, alt, minus
+        main, foundationCenter, foundationWall
     }
 
     color autoColor = color.red;
@@ -131,8 +131,10 @@ public class SolidRobot {
         BRW = hardwareMap.dcMotor.get("BRW");
         BLW = hardwareMap.dcMotor.get("BLW");
 
-        LL = hardwareMap.get(CRServo.class, "LL");
-        RL = hardwareMap.get(CRServo.class, "RL");
+        TLL = hardwareMap.get(CRServo.class, "TLL");
+        BLL = hardwareMap.get(CRServo.class, "BLL");
+        BRL = hardwareMap.get(CRServo.class, "BRL");
+        TRL = hardwareMap.get(CRServo.class, "TRL");
 
         RFC = hardwareMap.servo.get("RFC");
         LFC = hardwareMap.servo.get("LFC");
@@ -165,7 +167,8 @@ public class SolidRobot {
         BRW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         FRW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        LL.setDirection(DcMotorSimple.Direction.REVERSE);
+        TLL.setDirection(DcMotorSimple.Direction.REVERSE);
+        BLL.setDirection(DcMotorSimple.Direction.REVERSE);
 
         RC.setDirection(Servo.Direction.REVERSE);
 
@@ -190,8 +193,10 @@ public class SolidRobot {
         BRW.setPower(backRightWheel);
         FRW.setPower(frontRightWheel);
 
-        LL.setPower(leftLift);
-        RL.setPower(rightLift);
+        TLL.setPower(leftLift);
+        BLL.setPower(leftLift);
+        BRL.setPower(rightLift);
+        TRL.setPower(rightLift);
 
         RFC.setPosition(rightFoundationClaw);
         LFC.setPosition(leftFoundationClaw);
@@ -657,7 +662,7 @@ public class SolidRobot {
         correct(90, true);
 
         int move = 35;
-        if(blockPos == 1) move += 8;
+        if(blockPos == 1) move += 7;
         else if(blockPos == 2) move += 16;
         powerCorrectionDrive(.9, (int) (move * INCHES_TO_TICKS * (24 / 22.5)), 90);
 
@@ -669,8 +674,8 @@ public class SolidRobot {
         doDaSleep(500);
 
         int moveTwo = 60;
-        if(blockPos == 1) moveTwo += 8;
-        else if(blockPos == 2) moveTwo += 16;
+        if(blockPos == 1 || blockPos == 2) moveTwo += 8;
+        //else if(blockPos == 2) moveTwo += 14;
 
         powerCorrectionDriveBack(-0.9, (int) ((moveTwo) * INCHES_TO_TICKS * (24 / 22.5)), 90);
 
@@ -700,13 +705,82 @@ public class SolidRobot {
 
     }
 
+    public void redAuto(){
+        drive(20, 1.0);
+        //correct(0, true);
+        doDaSleep(1250);
+        if(targetVisible) blockPos = 0;
+        else{
+            powerStrafeWithTicks(-0.15, 525);
+            correct(0, true);
+            doDaSleep(1250);
+            if(targetVisible) blockPos = 1;
+            else{
+                blockPos = 2;
+                powerStrafeWithTicks(-0.15, 525);
+                correct(0, true);
+            }
+        }
+
+        pickUpBlock();
+
+        turn(-75, 0.5, false, -90);
+        doDaSleep(500);
+        correct(-90, true);
+
+        int move = 35;
+        if(blockPos == 1) move += 8;
+        else if(blockPos == 2) move += 16;
+        powerCorrectionDrive(.9, (int) (move * INCHES_TO_TICKS * (24 / 22.5)), -90);
+
+        leftClaw = 0.6;
+        rightClaw = 0.6;
+
+        correct(-90, true);
+
+        doDaSleep(500);
+
+        int moveTwo = 60;
+        if(blockPos == 1 || blockPos == 2) moveTwo += 8;
+        //else if(blockPos == 2) moveTwo += 14;
+
+        powerCorrectionDriveBack(-0.9, (int) ((moveTwo) * INCHES_TO_TICKS * (24 / 22.5)), -90);
+
+
+        turn(-15, 0.5, true, 0);
+        correct(0, true);
+
+        powerCorrectionDrive(0.5, 500, 0);
+        pickUpBlock();
+
+
+        turn(-70, 0.5, true, -90);
+        correct(-90, true);
+
+        int moveThree = moveTwo;
+
+        powerCorrectionDrive(1.0, (int) (moveThree * INCHES_TO_TICKS * (24 / 22.5)), -90);
+
+        leftClaw = 0.6;
+        rightClaw = 0.6;
+
+        doDaSleep(500);
+
+        drive(-12, 1.0);
+
+        powerStrafe(-0.1);
+        doDaSleep(1000);
+        powerStrafe(0.0);
+    }
+
     public void pickUpBlock(){
         powerLift(-1.0);
-        leftClaw = 0.9;
-        rightClaw = 0.9;
+        leftClaw = 0.55;
+        rightClaw = 0.8;
         doDaSleep(400);
+        powerLift(1.0);
+        doDaSleep(700);
         powerLift(0.0);
-        doDaSleep(200);
         int startTicks = BRW.getCurrentPosition();
         timeDrive(0.3, 750);
         leftClaw = 0.6;
@@ -721,5 +795,212 @@ public class SolidRobot {
         targetDriveWithTicks(startTicks - finalTicks, 1.0);
     }
 
+    public void redFoundationCenterAuto(){
+        powerStrafe(.5);
+        doDaSleep(500);
+        powerStrafe(0.0);
 
+        timeDrive(-.3, 400);
+
+        powerCorrectionDrive(.8, (int) (21 * INCHES_TO_TICKS * (24/22.5)), 0);
+
+        powerWheels(0.15);
+        doDaSleep(500);
+        leftFoundationClaw = 0.36;
+        rightFoundationClaw = 0.36;
+        doDaSleep(250);
+        powerWheels(0.0);
+
+        powerCorrectionDriveBack(-0.5, (int) (18 * INCHES_TO_TICKS * (24/22.5)), 0);
+
+        turn(-75, .5, true, -90);
+        correct(-90, true);
+
+        leftFoundationClaw = 0.6;
+        rightFoundationClaw = 0.6;
+
+        powerStrafe(-.2);
+        doDaSleep(500);
+        powerStrafe(0.0);
+
+        timeDrive(.3, 1500);
+
+        powerStrafe(-.2);
+        doDaSleep(1000);
+        powerStrafe(0.0);
+
+        powerLift(-1.0);
+        doDaSleep(400);
+        powerLift(1.0);
+        doDaSleep(400);
+        powerLift(0.0);
+
+        powerCorrectionDriveBack(-.5, (int) (40 * INCHES_TO_TICKS * (24/22.5)), -90);
+
+        powerStrafe(-0.2);
+        doDaSleep(800);
+        powerStrafe(0.0);
+
+    }
+
+    public void redFoundationWallAuto(){
+        powerStrafe(.5);
+        doDaSleep(500);
+        powerStrafe(0.0);
+
+        timeDrive(-.3, 400);
+
+        powerCorrectionDrive(.8, (int) (21 * INCHES_TO_TICKS * (24/22.5)), 0);
+
+        powerWheels(0.15);
+        doDaSleep(400);
+        leftFoundationClaw = 0.36;
+        rightFoundationClaw = 0.36;
+        doDaSleep(250);
+        powerWheels(0.0);
+
+        powerCorrectionDriveBack(-0.5, (int) (18 * INCHES_TO_TICKS * (24/22.5)), 0);
+
+        turn(-75, .5, true, -90);
+        correct(-90, true);
+
+        leftFoundationClaw = 0.6;
+        rightFoundationClaw = 0.6;
+
+        powerCorrectionDriveBack(-.3, (int) ( 4 * INCHES_TO_TICKS * (24/22.5)), 0);
+
+        powerStrafe(-.5);
+        doDaSleep(500);
+        powerStrafe(0.0);
+
+        timeDrive(.3, 1500);
+
+        powerStrafe(.2);
+        doDaSleep(4000);
+        powerStrafe(0.0);
+
+        powerStrafe(.15);
+        doDaSleep(250);
+        powerStrafe(0.0);
+
+        powerLift(-1.0);
+        doDaSleep(400);
+        powerLift(1.0);
+        doDaSleep(400);
+        powerLift(0.0);
+
+        powerCorrectionDriveBack(-.5, (int) (40 * INCHES_TO_TICKS * (24/22.5)), -90);
+
+        powerStrafe(0.2);
+        doDaSleep(700);
+        powerStrafe(0.0);
+    }
+
+    public void blueFoundationWallAuto()
+    {
+        powerStrafe(-.5);
+        doDaSleep(500);
+        powerStrafe(0.0);
+
+        timeDrive(-.3, 400);
+
+        powerCorrectionDrive(.8, (int) (21 * INCHES_TO_TICKS * (24/22.5)), 0);
+
+        powerWheels(0.15);
+        doDaSleep(400);
+        leftFoundationClaw = 0.36;
+        rightFoundationClaw = 0.36;
+        doDaSleep(250);
+        powerWheels(0.0);
+
+        powerCorrectionDriveBack(-0.5, (int) (18 * INCHES_TO_TICKS * (24/22.5)), 0);
+
+        turn(75, .5, true, 90);
+        correct(90, true);
+
+        leftFoundationClaw = 0.6;
+        rightFoundationClaw = 0.6;
+
+        powerCorrectionDriveBack(-.3, (int) ( 4 * INCHES_TO_TICKS * (24/22.5)), 0);
+
+        powerStrafe(.5);
+        doDaSleep(500);
+        powerStrafe(0.0);
+
+        timeDrive(.3, 1500);
+
+        powerStrafe(-.2);
+        doDaSleep(3000);
+        powerStrafe(0.0);
+
+        powerStrafe(.3);
+        doDaSleep(450);
+        powerStrafe(0.0);
+
+        powerLift(-1.0);
+        doDaSleep(400);
+        powerLift(1.0);
+        doDaSleep(400);
+        powerLift(0.0);
+
+        powerCorrectionDriveBack(-.5, (int) (40 * INCHES_TO_TICKS * (24/22.5)), 90);
+
+        powerStrafe(-0.2);
+        doDaSleep(700);
+        powerStrafe(0.0);
+    }
+
+    public void blueFoundationCenterAuto()
+    {
+        powerStrafe(-.5);
+        doDaSleep(500);
+        powerStrafe(0.0);
+
+        timeDrive(-.3, 400);
+
+        powerCorrectionDrive(.8, (int) (21 * INCHES_TO_TICKS * (24/22.5)), 0);
+
+        powerWheels(0.15);
+        doDaSleep(500);
+        leftFoundationClaw = 0.36;
+        rightFoundationClaw = 0.36;
+        doDaSleep(250);
+        powerWheels(0.0);
+
+        powerCorrectionDriveBack(-0.5, (int) (18 * INCHES_TO_TICKS * (24/22.5)), 0);
+
+        turn(75, .5, true, 90);
+        correct(90, true);
+
+        leftFoundationClaw = 0.6;
+        rightFoundationClaw = 0.6;
+
+        powerCorrectionDriveBack(-.3, (int) ( 4 * INCHES_TO_TICKS * (24/22.5)), 0);
+
+        powerStrafe(.5);
+        doDaSleep(500);
+        powerStrafe(0.0);
+
+        powerStrafe(.2);
+        doDaSleep(500);
+        powerStrafe(0.0);
+
+        timeDrive(.3, 1500);
+
+        powerStrafe(.2);
+        doDaSleep(600);
+        powerStrafe(0.0);
+
+        powerLift(-1.0);
+        doDaSleep(400);
+        powerLift(1.0);
+        doDaSleep(400);
+        powerLift(0.0);
+
+        powerCorrectionDriveBack(-.5, (int) (40 * INCHES_TO_TICKS * (24/22.5)), 90);
+
+        powerStrafe(0.2);
+        doDaSleep(800);
+        powerStrafe(0.0);
+    }
 }

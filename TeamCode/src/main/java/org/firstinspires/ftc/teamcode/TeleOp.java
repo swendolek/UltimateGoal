@@ -58,7 +58,9 @@ public class TeleOp extends OpMode{
         telemetry.addData("BRW", robot.BRW.getCurrentPosition());
         telemetry.addData("FRW", robot.FRW.getCurrentPosition());
         telemetry.addData("gyro", robot.getAngle());
-        //
+        telemetry.addData("right claw", robot.rightClaw);
+        telemetry.addData("left claw", robot.leftClaw); //0.55 left, 0.8 right
+
         // telemetry.addData("Visible Target", robot.targetVisible);
 
         if(gamepad1.a) {
