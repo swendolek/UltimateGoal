@@ -25,8 +25,12 @@ public class TeleOp extends OpMode{
 
     private boolean clawPressed = false;
     private boolean clawOpen = false;
+    private boolean turning = false;
+    private double turnVal = 0;
+    private long startTime = 0;
 
     SolidRobot robot;
+
 
     /**
      * init - runs once after the init button is pressed
@@ -34,7 +38,6 @@ public class TeleOp extends OpMode{
     public void init(){
 
         robot = new SolidRobot(hardwareMap, false);
-
 
 
     }
@@ -57,6 +60,7 @@ public class TeleOp extends OpMode{
         telemetry.addData("BLW", robot.BLW.getCurrentPosition());
         telemetry.addData("BRW", robot.BRW.getCurrentPosition());
         telemetry.addData("FRW", robot.FRW.getCurrentPosition());
+        telemetry.addData("Turning", turning);
         telemetry.addData("gyro", robot.getAngle());
         telemetry.addData("right claw", robot.rightClaw);
         telemetry.addData("left claw", robot.leftClaw); //0.55 left, 0.8 right
@@ -112,30 +116,37 @@ public class TeleOp extends OpMode{
             driveDivider = 4;
             strafeDivider = 4;
         }
-        else if(gamepad1.left_trigger > 0.5){
-            driveDivider = 8;
-            strafeDivider = 8;
-        }
-        else if(gamepad1.right_trigger > 0.5) driveDivider = 16;
         else driveDivider = 2;
 
-        if(gamepad1.dpad_left){
-            robot.backLeftWheel = 1.0 / strafeDivider;
-            robot.frontLeftWheel = -1.0 / strafeDivider;
-            robot.frontRightWheel = 1.0 / strafeDivider;
-            robot.backRightWheel = -1.0 / strafeDivider;
+        double strafeAddend = 0.0;
+        if(gamepad1.right_trigger > 0.2) strafeAddend = 1.0;
+        else if(gamepad1.left_trigger > 0.2) strafeAddend = -1.0;
+
+        robot.backLeftWheel = (-gamepad1.left_stick_y - strafeAddend) / driveDivider;
+        robot.frontLeftWheel = (-gamepad1.left_stick_y + strafeAddend) / driveDivider;
+        robot.backRightWheel = (-gamepad1.right_stick_y + strafeAddend) / driveDivider;
+        robot.frontRightWheel = (-gamepad1.right_stick_y - strafeAddend) / driveDivider;
+
+        robot.clipToMotorRange(robot.backLeftWheel);
+        robot.clipToMotorRange(robot.frontLeftWheel);
+        robot.clipToMotorRange(robot.backRightWheel);
+        robot.clipToMotorRange(robot.frontRightWheel);
+
+        if(gamepad1.back && !turning){
+            turning = true;
+            turnVal = robot.getAngle() + 180;
+            startTime = System.currentTimeMillis();
         }
-        else if (gamepad1.dpad_right){
-            robot.backLeftWheel = -1.0 / strafeDivider;
-            robot.frontLeftWheel = 1.0 / strafeDivider;
-            robot.frontRightWheel = -1.0 / strafeDivider;
-            robot.backRightWheel = 1.0 / strafeDivider;
-        }
-        else {
-            robot.backLeftWheel = -gamepad1.left_stick_y / driveDivider;
-            robot.frontLeftWheel = -gamepad1.left_stick_y / driveDivider;
-            robot.backRightWheel = -gamepad1.right_stick_y / driveDivider;
-            robot.frontRightWheel = -gamepad1.right_stick_y / driveDivider;
+        if(turning){
+            if(robot.getAngle() > turnVal || System.currentTimeMillis() > startTime + 1000){ //If it has turn 180 or has gone a second without making it
+                turning = false;
+            }
+            else{
+                robot.backLeftWheel = -1.0;
+                robot.frontLeftWheel = -1.0;
+                robot.backRightWheel = 1.0;
+                robot.frontRightWheel = 1.0;
+            }
         }
 
         robot.setAllPositions();

@@ -252,7 +252,7 @@ public class SolidRobot {
         return globalAngle;
     }
 
-    private void turn(double degrees, double power, boolean correct, double correctDegrees){
+    public void turn(double degrees, double power, boolean correct, double correctDegrees){
 
         FLW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         BLW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -462,6 +462,13 @@ public class SolidRobot {
         tfodParameters.minimumConfidence = 0.8;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
+    }
+
+    public double clipToMotorRange(double val){
+        double temp = val;
+        if(val > 1.0) temp = 1.0;
+        else if(val < -1.0) temp = -1.0;
+        return temp;
     }
 
     public void powerWheels(double power){
@@ -750,7 +757,7 @@ public class SolidRobot {
         turn(-15, 0.5, true, 0);
         correct(0, true);
 
-        powerCorrectionDrive(0.5, 500, 0);
+        //powerCorrectionDrive(0.5, 500, 0);
         pickUpBlock();
 
 
@@ -1002,5 +1009,9 @@ public class SolidRobot {
         powerStrafe(0.2);
         doDaSleep(800);
         powerStrafe(0.0);
+    }
+
+    public void oneEighty(){
+        turn(getAngle() + 180, 1.0, false, 0);
     }
 }
