@@ -46,7 +46,7 @@ public class Autonomous extends OpMode{
             else{
                 if (robot.autoProgram == SolidRobot.program.main) {
                     //red main
-                    robot.blueSideAuto();
+                    robot.blueAuto();
                 } else if (robot.autoProgram == SolidRobot.program.foundationCenter) {
                     robot.blueFoundationCenterAuto();
                 } else if(robot.autoProgram == SolidRobot.program.foundationWall){

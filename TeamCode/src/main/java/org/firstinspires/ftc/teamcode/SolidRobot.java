@@ -45,6 +45,8 @@ public class SolidRobot {
 
     HardwareMap hardwareMap;
 
+
+    //Creating motor/sensor variables
     public DcMotor FLW, FRW, BRW, BLW; //Drive motors
     public double frontLeftWheel = 0.0, frontRightWheel = 0.0, backRightWheel = 0.0, backLeftWheel = 0.0;
 
@@ -57,53 +59,48 @@ public class SolidRobot {
     public Servo LC, RC; //Claw
     public double leftClaw = 0.0, rightClaw = 0.0;
 
-    public BNO055IMU gyro;
+    public BNO055IMU gyro; //Gyro
     Orientation lastAngles = new Orientation();
     public double globalAngle = 0.0;
 
-
-    //int skystonePos = 0;
-
-    //encoder ticks per revolution / 2pi
+    //Driving constants
     private final double ENCODER_TICKS_PER_REVOLUTION = 383.6;
     private final double INCHES_TO_TICKS = ENCODER_TICKS_PER_REVOLUTION / (2 * Math.PI);
-    private double MINIMUM_DRIVE_POWER = 0.1;
 
+    //Autonomous variables
     public int blockPos = -1;
 
-    enum color{
+    //Autonomous enumerations
+    enum color{ //Alliance color
         red, blue
     }
 
-    enum program{
+    enum program{ //Autonomous program
         main, foundationCenter, foundationWall
     }
 
+    //Enumeration variables
     color autoColor = color.red;
     program autoProgram = program.main;
 
+    //Vuforia variables
     private static final String TFOD_MODEL_ASSET = "Skystone.tflite";
     private static final String LABEL_FIRST_ELEMENT = "Stone";
     private static final String LABEL_SECOND_ELEMENT = "Skystone";
 
     private static final String VUFORIA_KEY = "ATwGhwr/////AAAAGSP3/Jq5X0Zfkfo72G/VFE1ZvdzzZHwcCBd3MYXbw3/sNurlCSnfSksQh10JVp7KsgxEXn2zuImquxtNVs5s5sFifcmkHE98FiGOOHTTLVhwi9svT7cLW+hQfaQQ1QmGBZ9M5nna4+LVmgEtiAD8XAVmLBJb3xwkFfTqfAB8fWXmbiByf1f9ovWuG3a9v2FQQB9BqnDOFSnzQhDQFcgcEVyePXGSdVykMPC6zGPLGMgyNnF8pp1d+Tm0/HZYwEyZVCVma5S+1mozDg1wAWIeonPhJ8o9EAq63O/rGxwWho7lnuqIfSlPMzYlFg0OY97Vl30i4okUh3rqRH1zaKUA2NncE7QPqXkQpI+yXBIyCLRL";
 
-    // Since ImageTarget trackables use mm to specifiy their dimensions, we must use mm for all the physical dimension.
-    // We will define some constants and conversions here
     public static final float mmPerInch        = 25.4f;
-    public static final float mmTargetHeight   = (6) * mmPerInch;          // the height of the center of the target image above the floor
+    public static final float mmTargetHeight   = (6) * mmPerInch;
 
-    // Constant for Stone Target
     public static final float stoneZ = 2.00f * mmPerInch;
 
-    // Constants for the center support targets
     public static final float bridgeZ = 6.42f * mmPerInch;
     public static final float bridgeY = 23 * mmPerInch;
     public static final float bridgeX = 5.18f * mmPerInch;
-    public static final float bridgeRotY = 59;                                 // Units are degrees
+    public static final float bridgeRotY = 59;
     public static final float bridgeRotZ = 180;
 
-    // Constants for perimeter targets
     public static final float halfField = 72 * mmPerInch;
     public static final float quadField  = 36 * mmPerInch;
 
@@ -119,36 +116,39 @@ public class SolidRobot {
     public  TFObjectDetector tfod;
 
     /**
-     * SolidRobot - constructor for robot object, initializes hardware
-     * @param hardwareMap - hardware map lmao
+     * SolidRobot - constructor for robot class
+     * @param hardwareMap - OpMode hardware map variable
+     * @param auto - Parameter to track whether it is an autonomous program
      */
     public SolidRobot(HardwareMap hardwareMap, boolean auto){
 
         this.hardwareMap = hardwareMap;
 
+        //Initializing hardware components
         FLW = hardwareMap.dcMotor.get("FLW"); //Drive motors
         FRW = hardwareMap.dcMotor.get("FRW");
         BRW = hardwareMap.dcMotor.get("BRW");
         BLW = hardwareMap.dcMotor.get("BLW");
 
-        TLL = hardwareMap.get(CRServo.class, "TLL");
+        TLL = hardwareMap.get(CRServo.class, "TLL"); //Lift motors
         BLL = hardwareMap.get(CRServo.class, "BLL");
         BRL = hardwareMap.get(CRServo.class, "BRL");
         TRL = hardwareMap.get(CRServo.class, "TRL");
 
-        RFC = hardwareMap.servo.get("RFC");
+        RFC = hardwareMap.servo.get("RFC"); //Foundation claw servos
         LFC = hardwareMap.servo.get("LFC");
 
-        LC = hardwareMap.servo.get("LC");
+        LC = hardwareMap.servo.get("LC"); //Claw servos
         RC = hardwareMap.servo.get("RC");
 
 
         if(true == true){
-            gyro = hardwareMap.get(BNO055IMU.class, "imu");
+            gyro = hardwareMap.get(BNO055IMU.class, "imu"); //Gyro
             gyro.initialize(getParam());
             resetAngle();
         }
 
+        //Setting hardware attributes
         FRW.setDirection(DcMotorSimple.Direction.REVERSE);
         BRW.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -174,19 +174,15 @@ public class SolidRobot {
 
         RFC.setDirection(Servo.Direction.REVERSE);
 
+        //Initialize vuforia
         if(true) initVuforia();
-        //initTfod();
-
-
 
     }
 
-    public void start(){
-        if (tfod != null) {
-            tfod.activate();
-        }
-    }
-
+    /**
+     * setAllPositions - Function to set powers and positions of hardware components. It is called
+     * in the loop function so that it doesn't keep going after the stop button is pressed
+     */
     public void setAllPositions(){
         FLW.setPower(frontLeftWheel);
         BLW.setPower(backLeftWheel);
@@ -205,6 +201,10 @@ public class SolidRobot {
         RC.setPosition(rightClaw);
     }
 
+    /**
+     * doDaSleep - Stop actions for a set amount of time
+     * @param milli - Time in milliseconds to stop for
+     */
     void doDaSleep( int milli )
     {
         try
@@ -217,6 +217,10 @@ public class SolidRobot {
 
     }
 
+    /**
+     * getParam - function to create a parameter profile for the gyro
+     * @return parameter profile
+     */
     private BNO055IMU.Parameters getParam(){
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -229,6 +233,9 @@ public class SolidRobot {
         return parameters;
     }
 
+    /**
+     * resetAngle - function to reset the gyro position to zero
+     */
     public void resetAngle()
     {
         lastAngles = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
@@ -236,6 +243,10 @@ public class SolidRobot {
         globalAngle = 0;
     }
 
+    /**
+     * getAngle - function to get the angular position of the robot
+     * @return the angular position of the robot
+     */
     public double getAngle() {
         Orientation angles = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         double deltaAngle = angles.firstAngle - lastAngles.firstAngle;
@@ -252,6 +263,13 @@ public class SolidRobot {
         return globalAngle;
     }
 
+    /**
+     * turn - function to turn to an angle
+     * @param degrees - target orientation
+     * @param power - power to run the motors at
+     * @param correct - whether to realign to the orientation at a slower pace
+     * @param correctDegrees - orientation to correct to
+     */
     public void turn(double degrees, double power, boolean correct, double correctDegrees){
 
         FLW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -290,6 +308,11 @@ public class SolidRobot {
         if(correct) turn(correctDegrees + correctionVal, 0.1, false, correctDegrees);
     }
 
+    /**
+     * correct - align the robot exactly to an orientation
+     * @param initDegrees - target orientation
+     * @param exact - whether or not to narrow the range of error
+     */
     private void correct(double initDegrees, boolean exact){
         FLW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         BLW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -330,6 +353,9 @@ public class SolidRobot {
         powerWheels(0.0);
     }
 
+    /**
+     * initVuforia - initialize Vuforia
+     */
     private void initVuforia() {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
@@ -453,7 +479,7 @@ public class SolidRobot {
     }
 
     /**
-     * Initialize the TensorFlow Object Detection engine.
+     * initTfod - Initialize the TensorFlow Object Detection engine.
      */
     private void initTfod() {
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
@@ -464,6 +490,11 @@ public class SolidRobot {
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
     }
 
+    /**
+     * clipToMotorRange - clip motor power variables to make sure that they don't go outside the domain of motor powers ([-1.0, 1.0])
+     * @param val - initial power variable
+     * @return the clipped power
+     */
     public double clipToMotorRange(double val){
         double temp = val;
         if(val > 1.0) temp = 1.0;
@@ -471,6 +502,10 @@ public class SolidRobot {
         return temp;
     }
 
+    /**
+     * powerWheels - set wheel motors to a power
+     * @param power - power to set the wheels to
+     */
     public void powerWheels(double power){
         frontLeftWheel = power;
         frontRightWheel = power;
@@ -478,6 +513,10 @@ public class SolidRobot {
         backRightWheel = power;
     }
 
+    /**
+     * powerStrafe - set wheel motors to strafe to a power
+     * @param power - power to set the wheels to
+     */
     public void powerStrafe(double power){
         backLeftWheel = -power;
         frontLeftWheel = power;
@@ -485,10 +524,20 @@ public class SolidRobot {
         backRightWheel = power;
     }
 
+    /**
+     * drive - drive exactly an amount of inches using the motor's TARGET_POSITION mode
+     * @param inches - inches to move
+     * @param power - power to set the wheels to
+     */
     private void drive(double inches, double power){
         targetDriveWithTicks((int) (inches * INCHES_TO_TICKS * (24 / 22.5)), power);
     }
 
+    /**
+     * targetDriveWithTicks - drive exactly an amount of encoder ticks using the motor's TARGET_POSITION mode
+     * @param ticks - ticks to move
+     * @param power - power to set the wheels to
+     */
     private void targetDriveWithTicks(int ticks, double power){
         FLW.setTargetPosition(ticks + FLW.getCurrentPosition());
         BLW.setTargetPosition(ticks + BLW.getCurrentPosition());
@@ -507,14 +556,22 @@ public class SolidRobot {
 
         }
         powerWheels(0.0);
-        //I used to set the motors to run without encoder here
     }
 
+    /**
+     * powerLift - set the lift motors to a power
+     * @param power - power to set the lift to
+     */
     public void powerLift(double power){
         leftLift = power * 0.7;
         rightLift = power * 0.7;
     }
 
+    /**
+     * timeDrive - drive for an amount of time
+     * @param power - power to set the motors to
+     * @param millis - milliseconds to drive for
+     */
     public void timeDrive(double power, long millis){
         FLW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         BLW.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -529,10 +586,20 @@ public class SolidRobot {
         powerWheels(0.0);
     }
 
+    /**
+     * strafe - strafe exactly an amount of inches using the motor's TARGET_POSITION mode
+     * @param inches - inches to move
+     * @param power - power to set the motors to
+     */
     private void strafe(double inches, double power){
         strafeWithTicks((int) (inches * 90), power);
     }
 
+    /**
+     * strafeWithTicks - strafe exactly an amount of encoder ticks using the motor's TARGET_POSITION mode
+     * @param ticks - ticks to move
+     * @param power - power to set the motors to
+     */
     private void strafeWithTicks(int ticks, double power){
 
         FLW.setTargetPosition(ticks + FLW.getCurrentPosition());
@@ -564,6 +631,11 @@ public class SolidRobot {
         powerWheels(0.0);
     }
 
+    /**
+     * powerStrafeWithTicks - strafe for an amount of encoder ticks without correctiong
+     * @param power - power to set the motors to
+     * @param absTicks - ticks to move
+     */
     public void powerStrafeWithTicks(double power, int absTicks){
 
         setMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -577,6 +649,12 @@ public class SolidRobot {
         powerWheels(0.0);
     }
 
+    /**
+     * powerCorrectionDrive - drive for an amount of encoder ticks while using the gyro to keep aligned
+     * @param power - power to set the motors to
+     * @param ticks - ticks to move
+     * @param correctionDegree - gyro position to use as reference
+     */
     public void powerCorrectionDrive(double power, int ticks, double correctionDegree){
         double correctionVal = 1.2;
 
@@ -607,6 +685,12 @@ public class SolidRobot {
         powerWheels(0.0);
     }
 
+    /**
+     * powerCorrectionDriveBack - drive back for an amount of encoder ticks while using the gyro to keep aligned
+     * @param power - power to set the motors to
+     * @param ticks - ticks to move
+     * @param correctionDegree - gyro position to use as reference
+     */
     public void powerCorrectionDriveBack(double power, int ticks, double correctionDegree){
         double correctionVal = 1.2;
 
@@ -637,6 +721,10 @@ public class SolidRobot {
         powerWheels(0.0);
     }
 
+    /**
+     * setMotorMode - set wheel motors to a mode
+     * @param mode - mode to set the motors to
+     */
     public void setMotorMode(DcMotor.RunMode mode){
         FLW.setMode(mode);
         BLW.setMode(mode);
@@ -645,7 +733,10 @@ public class SolidRobot {
         doDaSleep(50);
     }
 
-    public void blueSideAuto(){
+    /**
+     * blueAuto - main autonomous program for blue side. Delivers both skystones and parks in the middle.
+     */
+    public void blueAuto(){
         drive(20, 1.0);
         //correct(0, true);
         doDaSleep(1250);
@@ -712,6 +803,9 @@ public class SolidRobot {
 
     }
 
+    /**
+     * redAuto - main autonomous program for blue side. Delivers both skystones and parks in the middle.
+     */
     public void redAuto(){
         drive(20, 1.0);
         //correct(0, true);
@@ -780,6 +874,9 @@ public class SolidRobot {
         powerStrafe(0.0);
     }
 
+    /**
+     * pickUpBlock - function to pick up a block from 10 inches away
+     */
     public void pickUpBlock(){
         powerLift(-1.0);
         leftClaw = 0.55;
@@ -802,6 +899,9 @@ public class SolidRobot {
         targetDriveWithTicks(startTicks - finalTicks, 1.0);
     }
 
+    /**
+     * redFoundationCenterAuto - autonomous program to get the foundation and park near the center
+     */
     public void redFoundationCenterAuto(){
         powerStrafe(.5);
         doDaSleep(500);
@@ -850,6 +950,9 @@ public class SolidRobot {
 
     }
 
+    /**
+     * redFoundationWallAuto - autonomous program to get the foundation and park near the wall
+     */
     public void redFoundationWallAuto(){
         powerStrafe(.5);
         doDaSleep(500);
@@ -903,6 +1006,9 @@ public class SolidRobot {
         powerStrafe(0.0);
     }
 
+    /**
+     * blueFoundationWallAuto - autonomous program to get the foundation and park near the wall
+     */
     public void blueFoundationWallAuto()
     {
         powerStrafe(-.5);
@@ -957,6 +1063,9 @@ public class SolidRobot {
         powerStrafe(0.0);
     }
 
+    /**
+     * blueFoundationCenterAuto - autonomous program to get the foundation and park near the center
+     */
     public void blueFoundationCenterAuto()
     {
         powerStrafe(-.5);
@@ -1011,7 +1120,4 @@ public class SolidRobot {
         powerStrafe(0.0);
     }
 
-    public void oneEighty(){
-        turn(getAngle() + 180, 1.0, false, 0);
-    }
 }

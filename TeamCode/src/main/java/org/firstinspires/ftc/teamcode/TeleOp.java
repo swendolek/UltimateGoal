@@ -110,12 +110,9 @@ public class TeleOp extends OpMode{
             robot.rightClaw = 0.6;
         }
 
-        int driveDivider, strafeDivider = 2;
+        int driveDivider;
         if(gamepad1.right_bumper) driveDivider = 1;
-        else if(gamepad1.left_bumper){
-            driveDivider = 4;
-            strafeDivider = 4;
-        }
+        else if(gamepad1.left_bumper) driveDivider = 4;
         else driveDivider = 2;
 
         double strafeAddend = 0.0;
@@ -151,7 +148,6 @@ public class TeleOp extends OpMode{
 
         robot.setAllPositions();
         getVuforiaInfo();
-
     }
 
     public void getTFODInfo(){
