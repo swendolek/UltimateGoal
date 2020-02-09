@@ -50,6 +50,9 @@ public class SolidRobot {
     public DcMotor FLW, FRW, BRW, BLW; //Drive motors
     public double frontLeftWheel = 0.0, frontRightWheel = 0.0, backRightWheel = 0.0, backLeftWheel = 0.0;
 
+    public DcMotor TM;
+    public double tapeMeasure = 0.0;
+
     public CRServo TLL, BLL, BRL, TRL; //Double-reverse four-bar lift vex motors
     public double leftLift = 0.0, rightLift = 0.0;
 
@@ -130,6 +133,8 @@ public class SolidRobot {
         BRW = hardwareMap.dcMotor.get("BRW");
         BLW = hardwareMap.dcMotor.get("BLW");
 
+        TM = hardwareMap.dcMotor.get("TM");
+
         TLL = hardwareMap.get(CRServo.class, "TLL"); //Lift motors
         BLL = hardwareMap.get(CRServo.class, "BLL");
         BRL = hardwareMap.get(CRServo.class, "BRL");
@@ -188,6 +193,8 @@ public class SolidRobot {
         BLW.setPower(backLeftWheel);
         BRW.setPower(backRightWheel);
         FRW.setPower(frontRightWheel);
+
+        TM.setPower(tapeMeasure);
 
         TLL.setPower(leftLift);
         BLL.setPower(leftLift);

@@ -110,9 +110,13 @@ public class TeleOp extends OpMode{
             robot.rightClaw = 0.6;
         }
 
+        if(gamepad1.dpad_up) robot.tapeMeasure = 0.75;
+        else if(gamepad1.dpad_down) robot.tapeMeasure = -0.75;
+        else robot.tapeMeasure = 0.0;
+
         int driveDivider;
         if(gamepad1.right_bumper) driveDivider = 1;
-        else if(gamepad1.left_bumper) driveDivider = 4;
+        else if(gamepad1.left_bumper) driveDivider = 8;
         else driveDivider = 2;
 
         double strafeAddend = 0.0;
