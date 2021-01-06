@@ -23,12 +23,18 @@ public class Robot {
 
     HardwareMap hardwareMap;
 
+
     ArrayList<Object> hardwareComponents = new ArrayList<Object>();
+
 
     ArrayList<SolidMotor> motorList = new ArrayList<SolidMotor>();
 
     ArrayList<SolidMotor> driveMotorList = new ArrayList<SolidMotor>();
     SolidMotor FLW, FRW, BRW, BLW;
+
+
+    ArrayList<Object> sensorList = new ArrayList<Object>();
+    SolidGyro gyro;
 
 
 
@@ -40,6 +46,8 @@ public class Robot {
         FRW = new SolidMotor(hardwareMap, "FRW");
         driveMotorList.addAll(Arrays.asList(FLW, FRW, BRW, BLW));
 
+        gyro = new SolidGyro(hardwareMap, "imu");
+        sensorList.addAll(Arrays.asList(gyro));
 
         motorList.addAll(driveMotorList);
         hardwareComponents.addAll(motorList);
@@ -94,19 +102,20 @@ public class Robot {
             }*/
 
             //If ramping up
-            if(BLW.getPos() < dT * ACCELERATION_RATIO){
-
-                double decimalWayThroughRampUp = BLW.getPos() / (dT * ACCELERATION_RATIO); // 50 / (1000 * 0.25) = 0.2
+            if(Math.abs(BLW.getPos()) < Math.abs(dT * ACCELERATION_RATIO)){
+                //TODO add absolute values
+                double decimalWayThroughRampUp = Math.abs(BLW.getPos()) / (Math.abs(dT) * ACCELERATION_RATIO); // 50 / (1000 * 0.25) = 0.2
 
                 power = MINIMUM_DRIVE_POWER + ((maxPower - MINIMUM_DRIVE_POWER)) * decimalWayThroughRampUp;
             }
 
             //If ramping down
             //This is probably quadratic if I had to guess, if we want linear we have to use time
-            if(BLW.getPos() > dT - (dT * ACCELERATION_RATIO)){
+            if(Math.abs(BLW.getPos()) > Math.abs(dT - (dT * ACCELERATION_RATIO))){
 
-                double ticksAboveRampDownThreshold = (BLW.getPos() - (dT - (dT * ACCELERATION_RATIO))); //800 - 750
-                double decimalWayThroughRampDown = ticksAboveRampDownThreshold / (dT * ACCELERATION_RATIO); //50 / (1000 * 0.25) = 0.2
+                //TODO add absolute values
+                double ticksAboveRampDownThreshold = (Math.abs(BLW.getPos()) - (Math.abs(dT) - (Math.abs(dT) * ACCELERATION_RATIO))); //800 - 750
+                double decimalWayThroughRampDown = ticksAboveRampDownThreshold / (Math.abs(dT) * ACCELERATION_RATIO); //50 / (1000 * 0.25) = 0.2
 
                 power = MINIMUM_DRIVE_POWER + ((maxPower - MINIMUM_DRIVE_POWER)) * (1 - decimalWayThroughRampDown);
             }
@@ -126,7 +135,9 @@ public class Robot {
 
     }
 
-
+    public void turn(){
+        //Turn or something
+    }
 
 
     public void update(){
